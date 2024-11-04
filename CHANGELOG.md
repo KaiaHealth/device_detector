@@ -1,5 +1,7 @@
 # Change Log
 
+Update detection rules from upstream on 2024-11-04
+
 ## [1.1.3]
 
 - Updated detection rules from upstream on 2024-06-25 ([#124](https://github.com/podigee/device_detector/pull/124))

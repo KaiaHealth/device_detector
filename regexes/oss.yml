@@ -6,6 +6,47 @@
 ###############
 
 ##########
+# LeafOS (https://www.leafos.org/)
+##########
+- regex: 'LeafOS'
+  name: 'LeafOS'
+  version: ''
+
+##########
+# Puffin OS (https://www.puffin.com/os/help/faq/)
+##########
+- regex: 'Cloud Phone'
+  name: 'Puffin OS'
+  version: ''
+
+##########
+# risingOS (https://github.com/RisingTechOSS/android)
+##########
+- regex: 'RisingOS'
+  name: 'risingOS'
+  version: ''
+
+##########
+# Azure Linux (https://github.com/microsoft/azurelinux)
+##########
+- regex: 'Linux/.+-Microsoft'
+  name: 'Azure Linux'
+  version: ''
+
+# ViziOS
+##########
+- regex: 'ViziOS/(\d+[\.\d]+)'
+  name: 'ViziOS'
+  version: '$1'
+
+##########
+# blackPanther OS (https://blackpantheros.eu/)
+##########
+- regex: 'blackPanther OS'
+  name: 'blackPanther OS'
+  version: ''
+
+##########
 # WoPhone
 ##########
 - regex: 'WoPhone(?:/(\d+[\.\d]+))?'
@@ -348,9 +389,13 @@
 ##########
 # Amazon Linux (https://docs.aws.amazon.com/AL2/latest/relnotes/relnotes-al2.html)
 ##########
-- regex: '.+.amzn(\d)(?:int)?.x86_64'
+- regex: '.+.amzn(\d)(?:int)?.x86_64|Linux/.+aws'
   name: 'Amazon Linux'
   version: '$1'
+
+- regex: 'Linux/.+-c9$'
+  name: 'Amazon Linux'
+  version: '2023' # https://aws.amazon.com/about-aws/whats-new/2023/12/aws-cloud9-amazon-linux-2023/
 
 ##########
 # COS (China Operating System - https://web.archive.org/web/20170825001023/http://www.china-cos.com/)
@@ -418,7 +463,7 @@
 ##########
 # Whale OS (https://www.zeasn.com/)
 ##########
-- regex: '(?:WH|WhaleTV/)(\d+[\.\d]+)'
+- regex: '(?:WH|WhaleTV)/?(\d+[\.\d]+)'
   name: 'Whale OS'
   version: '$1'
 
@@ -571,6 +616,8 @@
 - regex: '(?:Android (\d([\d.])*);? )?lineage_\w+'
   name: 'Lineage OS'
   versions:
+    - regex: 'Android 15'
+      version: '22'
     - regex: 'Android 14'
       version: '21'
     - regex: 'Android 13'
@@ -652,9 +699,14 @@
 ##########
 # ChromeOS
 ##########
-- regex: 'CrOS [a-z0-9_]+ (\d+[\.\d]+)|Chromebook'
+- regex: '(?:CrOS [a-z0-9_]+ |.*Build/R\d+-)(\d+[\.\d]+)|Chromebook'
   name: 'Chrome OS'
   version: '$1'
+
+# https://chromiumdash.appspot.com/serving-builds?deviceCategory=ChromeOS
+- regex: '(?:Android (?:9|1[0-5])[.\d]*|Linux x86_64); (?:asurada|atlas|brask|brya|cherry|coral|corsola|dedede|drallion|elm|eve|fizz|geralt|grunt|guybrush|hana|hatch|jacuzzi|kalista|kukui|nami|nautilus|nissa|nocturne|octopus|puff|pyro|rammus|reef|rex|sand|sarien|skyrim|snappy|soraka|staryu|strongbad|trogdor|volteer|zork)\)'
+  name: 'Chrome OS'
+  version: ''
 
 ##########
 # Android TV (https://android.com/tv/)
@@ -735,7 +787,7 @@
   name: 'Android'
   version: ''
 
-- regex: '(?:Android OS|OMDroid|sdk_gphone64_arm64-userdebug)[ /](\d+[\.\d]*)'
+- regex: '(?:Android OS|OMDroid|sdk_gphone64_arm64-userdebug|StarOS)[ /](\d+[\.\d]*)'
   name: 'Android'
   version: '$1'
 
@@ -1041,6 +1093,12 @@
   versions:
     - regex: 'WEBOS(\d+[\.\d]+)'
       version: '$1'
+    - regex: 'Web0S; Linux/SmartTV.+Chr[o0]me/108'
+      version: '24'
+    - regex: 'Web0S; Linux/SmartTV.+Chr[o0]me/94'
+      version: '23'
+    - regex: 'Web0S; Linux/SmartTV.+Chr[o0]me/87'
+      version: '22'
     - regex: 'Web0S; Linux/SmartTV.+Chr[o0]me/79'
       version: '6'
     - regex: 'Web0S; Linux/SmartTV.+Chr[o0]me/68'
@@ -1091,7 +1149,7 @@
   name: 'Windows'
   version: '$1'
 
-- regex: 'CYGWIN_NT-10\.0|Windows NT 10\.0|Windows[ /]10'
+- regex: 'CYGWIN_NT-10\.0|Win(?:dows )?NT 10\.0|Windows[ /]10'
   name: 'Windows'
   version: '10'
 
@@ -1139,7 +1197,7 @@
   name: 'Windows'
   version: '2000'
 
-- regex: 'CYGWIN_NT-4\.0|Windows NT 4\.0|WinNT|Windows NT'
+- regex: 'CYGWIN_NT-4\.0|Windows NT 4\.0|WinNT(?! 10)|Windows NT'
   name: 'Windows'
   version: 'NT'
 
@@ -1200,7 +1258,7 @@
 ##########
 # watchOS (https://developer.apple.com/watchos/)
 ##########
-- regex: '(?:Watch1,[12]/|Watch OS,|watchOS[ /])(\d+[\.\d]*)'
+- regex: '(?:Watch1,[12]/|Watch OS,|watchOS[ /]?)(\d+[\.\d]*)?'
   name: 'watchOS'
   version: '$1'
 - regex: 'Apple Watch(?!;)'
@@ -1234,6 +1292,10 @@
   name: 'iPadOS'
   version: '$1.$2'
 
+- regex: 'iphoneos(1[3-8])\.(\d+[\.\d]*); iPad'
+  name: 'iPadOS'
+  version: '$1.$2'
+
 - regex: 'Pinterest for iOS/.*iPad.*; (\d(?:[\d\.]*))[)]$'
   name: 'iPadOS'
   version: '$1'
@@ -1248,6 +1310,10 @@
 - regex: '^(?:iPad|iPhone)(?:\d+[\,\d]*)[/_](\d+[\.\d]+)'
   name: 'iOS'
   version: '$1'
+
+- regex: 'iphoneos(1[3-8])\.(\d+[\.\d]*); iPhone'
+  name: 'iOS'
+  version: '$1.$2'
 
 - regex: 'Pinterest for iOS/.*iPhone.*; (\d(?:[\d\.]*))[)]$'
   name: 'iOS'
@@ -1272,6 +1338,10 @@
 - regex: '^(?!com\.apple\.Safari\.SearchHelper|Safari).*(?:CFNetwork|Mana)/.+ Darwin/(\d+[\.\d]+)(?!.*(?:x86_64|i386|PowerMac|Power%20Macintosh))'
   name: 'iOS'
   versions:
+    - regex: 'Darwin/24\.2\.0'
+      version: '18.2'
+    - regex: 'Darwin/24\.1\.0'
+      version: '18.1'
     - regex: 'Darwin/24\.0\.0'
       version: '18.0'
     - regex: 'Darwin/23\.5\.0'
@@ -1425,7 +1495,7 @@
     - regex: 'CFNetwork/459'
       version: '3.1'
 
-- regex: '(?:iPhone|iPod_touch)/(\d+[\.\d]*) hw/'
+- regex: '(?:iPhone|iPod_touch)/(\d+[\.\d]*)(?: hw)?/'
   name: 'iOS'
   version: '$1'
 
@@ -1489,7 +1559,7 @@
   name: 'iOS'
   version: ''
 
-- regex: 'CaptiveNetworkSupport|AirPlay|.*[ \.\-/]iOS'
+- regex: 'CaptiveNetworkSupport|AirPlay|.*[ \.\-/]iOS(?!@)'
   name: 'iOS'
   version: ''
 
@@ -1499,6 +1569,10 @@
 - regex: '(?:CFNetwork|Mana|StudioDisplay)/.+Darwin(?:/|; )(?:[\d\.]+).+(?:x86_64|i386|Power%20Macintosh)|(?:x86_64-apple-)?darwin(?:[\d\.]+)|C?Python.*Darwin|PowerMac|com\.apple\.Safari\.SearchHelper|^Safari'
   name: 'Mac'
   versions:
+    - regex: '(?:x86_64-apple-)?Darwin(?:/|; )?24\.2\.0'
+      version: '15.2'
+    - regex: '(?:x86_64-apple-)?Darwin(?:/|; )?24\.1\.0'
+      version: '15.1'
     - regex: '(?:x86_64-apple-)?Darwin(?:/|; )?24\.0\.0'
       version: '15.0'
     - regex: '(?:x86_64-apple-)?Darwin(?:/|; )?23\.5\.0'

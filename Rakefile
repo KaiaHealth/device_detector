@@ -48,28 +48,29 @@ task :detectable_names do
   puts
 end
 
-PIWIK_REPO_URL = 'https://github.com/matomo-org/device-detector'
-PIWIK_CHECKOUT_LOCATION = '/tmp/matomo_device_detector'
+MATOMO_REPO_URL = 'https://github.com/matomo-org/device-detector'
+MATOMO_REPO_TAG = '6.4.5'
+MATOMO_CHECKOUT_LOCATION = '/tmp/matomo_device_detector'
 
-def get_latest_piwik_checkout
-  if File.exist?(PIWIK_CHECKOUT_LOCATION)
-    system "cd #{PIWIK_CHECKOUT_LOCATION}; git reset --hard HEAD; git pull origin master"
+def get_latest_matomo_checkout
+  if File.exist?(MATOMO_CHECKOUT_LOCATION)
+    system "cd #{MATOMO_CHECKOUT_LOCATION}; git fetch origin; git reset --hard #{MATOMO_REPO_TAG}"
   else
-    system "git clone --depth 1 #{PIWIK_REPO_URL} #{PIWIK_CHECKOUT_LOCATION}"
+    system "git clone --depth 100 #{MATOMO_REPO_URL} -b #{MATOMO_REPO_TAG} #{MATOMO_CHECKOUT_LOCATION}"
   end
 end
 
-desc 'update regex database from piwik project'
+desc 'update regex database from matomo project'
 task :update_regexes do
   top = File.expand_path(__dir__)
-  get_latest_piwik_checkout
-  system "cp -R #{PIWIK_CHECKOUT_LOCATION}/regexes/* #{top}/regexes"
+  get_latest_matomo_checkout
+  system "cp -R #{MATOMO_CHECKOUT_LOCATION}/regexes/* #{top}/regexes"
 end
 
-desc 'update fixtures from piwik project'
+desc 'update fixtures from matomo project'
 task :update_fixtures do
   top = File.expand_path(__dir__)
-  get_latest_piwik_checkout
+  get_latest_matomo_checkout
 
   fixture_mappings = [
     { target_path: "#{top}/spec/fixtures/detector", source_path: 'Tests/fixtures/*.yml' },
@@ -83,6 +84,6 @@ task :update_fixtures do
   fixture_mappings.each do |mapping|
     source_path = mapping.fetch(:source_path)
     target_path = mapping.fetch(:target_path)
-    system "cp -R #{PIWIK_CHECKOUT_LOCATION}/#{source_path} #{target_path}"
+    system "cp -R #{MATOMO_CHECKOUT_LOCATION}/#{source_path} #{target_path}"
   end
 end

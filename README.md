@@ -11,7 +11,7 @@ The DeviceDetector is optimized for speed of detection, by providing optimized c
 DeviceDetector is funded by the owners of [Podigee the podcast hosting, analytics & monetization SaaS for podcasters big and small.](https://www.podigee.com) and actively maintained by the development team.
 
 This project originated as a Ruby port of the Universal Device Detection library written and maintained by Matomo Analytics.
-You can find the original code here: [https://github.com/piwik/device-detector](https://github.com/matomo-org/device-detector).
+You can find the original code here: [https://github.com/matomo-org/device-detector](https://github.com/matomo-org/device-detector).
 
 ## Disclaimer
 
@@ -205,4 +205,4 @@ Thanks a lot to the following contributors:
 4. Commit your changes (`git commit -am 'Add some feature'`)
 5. Push to the branch (`git push origin my-new-feature`)
 6. Create a new Pull Request (compare with develop)
-7. When adding new data to the yaml files, please make sure to open a PR in the original project, as well (https://github.com/piwik/device-detector)
+7. When adding new data to the yaml files, please make sure to open a PR in the original project, as well (https://github.com/matomo-org/device-detector)

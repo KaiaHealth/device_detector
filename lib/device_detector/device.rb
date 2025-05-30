@@ -2033,7 +2033,7 @@ class DeviceDetector
     end
 
     # The order of files needs to be the same as the order of device
-    # parser classes used in the piwik project.
+    # parser classes used in the matomo project.
     def filenames
       [
         'device/televisions.yml',

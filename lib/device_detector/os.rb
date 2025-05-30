@@ -14,16 +14,47 @@ class DeviceDetector
       end
     end
 
+    attr_reader :client_hint
+
+    def initialize(user_agent, client_hint)
+      super(user_agent)
+      @client_hint = client_hint
+
+      restore_from_client_hints
+    end
+
     def name
-      os_info[:name]
+      ua_name = from_ua[:name]
+      @name = ua_name
+
+      if client_hint.os_name
+        @name = client_hint.os_name
+
+        # If the OS name detected from client hints matches the OS family from user agent
+        # but the os name is another, we use the one from user agent, as it might be more detailed
+
+        @name = ua_name if from_ua[:family] == @name && ua_name != @name
+
+        # Chrome OS is in some cases reported as Linux in client hints, we fix this only if the version matches
+        # debugger
+
+        if @name == 'GNU/Linux' && \
+           ua_name == 'Chrome OS' && \
+           from_ua[:version] == client_hint.version
+
+          @name = ua_name
+        end
+      end
+
+      @name
     end
 
     def short_name
-      os_info[:short]
+      from_ua[:short]
     end
 
     def family
-      os_info[:family]
+      from_ua[:family]
     end
 
     def desktop?
@@ -37,8 +68,38 @@ class DeviceDetector
 
     private
 
-    def os_info
-      from_cache(['os_info', self.class.name, user_agent]) do
+    def restore_from_client_hints
+      return if client_hint.nil?
+      return if client_hint.model.nil?
+
+      # Restore Android User Agent
+      if user_agent_client_hints_fragment?
+        version = full_version.nil? ? '10' : full_version
+        @user_agent = @user_agent.sub(
+          /(Android (?:10[.\d]*; K|1[1-5]))/i,
+          "Android #{version}; #{client_hint.model}"
+        )
+      end
+      # Restore Desktop User Agent
+
+      return unless desktop?
+
+      @user_agent = @user_agent.gsub(
+        '(X11; Linux x86_64)',
+        "X11; Linux x86_64; #{client_hint.model}"
+      )
+    end
+
+    def user_agent_client_hints_fragment?
+      @user_agent.match?(build_regex('Android (?:10[.\d]*; K(?: Build/|[;)])|1[1-5]\)) AppleWebKit'))
+    end
+
+    def build_regex(src)
+      Regexp.new('(?:^|[^A-Z0-9\_\-])(?:' + src + ')', Regexp::IGNORECASE)
+    end
+
+    def from_ua
+      from_cache(['os_info_from_ua', self.class.name, user_agent]) do
         os_name = NameExtractor.new(user_agent, regex_meta).call
         if os_name && (short = DOWNCASED_OPERATING_SYSTEMS[os_name.downcase])
           os_name = OPERATING_SYSTEMS[short]
@@ -71,12 +132,14 @@ class DeviceDetector
       'ARL' => 'Arch Linux',
       'AOS' => 'AOSC OS',
       'ASP' => 'ASPLinux',
+      'AZU' => 'Azure Linux',
       'BTR' => 'BackTrack',
       'SBA' => 'Bada',
       'BYI' => 'Baidu Yi',
       'BEO' => 'BeOS',
       'BLB' => 'BlackBerry OS',
       'QNX' => 'BlackBerry Tablet OS',
+      'PAN' => 'blackPanther OS',
       'BOS' => 'Bliss OS',
       'BMP' => 'Brew',
       'BSN' => 'BrightSignOS',
@@ -129,6 +192,7 @@ class DeviceDetector
       'KTV' => 'KreaTV',
       'KBT' => 'Kubuntu',
       'LIN' => 'GNU/Linux',
+      'LEA' => 'LeafOS',
       'LND' => 'LindowsOS',
       'LNS' => 'Linspire',
       'LEN' => 'Lineage OS',
@@ -173,6 +237,7 @@ class DeviceDetector
       'PSP' => 'PlayStation Portable',
       'PS3' => 'PlayStation',
       'PVE' => 'Proxmox VE',
+      'PUF' => 'Puffin OS',
       'PUR' => 'PureOS',
       'QTP' => 'Qtopia',
       'PIO' => 'Raspberry Pi OS',
@@ -181,6 +246,7 @@ class DeviceDetector
       'RST' => 'Red Star',
       'RED' => 'RedOS',
       'REV' => 'Revenge OS',
+      'RIS' => 'risingOS',
       'ROS' => 'RISC OS',
       'ROC' => 'Rocky Linux',
       'ROK' => 'Roku OS',
@@ -216,6 +282,7 @@ class DeviceDetector
       'ULT' => 'ULTRIX',
       'UOS' => 'UOS',
       'VID' => 'VIDAA',
+      'VIZ' => 'ViziOS',
       'WAS' => 'watchOS',
       'WER' => 'Wear OS',
       'WTV' => 'WebTV',
@@ -246,9 +313,11 @@ class DeviceDetector
 
     # https://github.com/matomo-org/device-detector/blob/75d88bbefb0182f9207c9f48dc39b1bc8c7cc43f/Parser/OperatingSystem.php#L227-L269
     OS_FAMILIES = {
-      'Android' => %w[ AND CYN FIR REM RZD MLD MCD YNS GRI HAR
-                       ADR CLR BOS REV LEN SIR RRS WER PIC ARM
-                       HEL BYI],
+      'Android' => %w[
+        AND CYN FIR REM RZD MLD MCD YNS GRI HAR
+        ADR CLR BOS REV LEN SIR RRS WER PIC ARM
+        HEL BYI RIS PUF LEA
+      ],
       'AmigaOS' => %w[AMG MOR ARO],
       'BlackBerry' => %w[BLB QNX],
       'Brew' => ['BMP'],
@@ -269,7 +338,7 @@ class DeviceDetector
         NOV ROU ZOR RED KAL ORA VID TIV BSN RAS
         UOS PIO FRI LIR WEB SER ASP AOS LOO EUL
         SCI ALP CLO ROC OVZ PVE RST EZX GNS JOL
-        TUR QTP WPO
+        TUR QTP WPO PAN VIZ AZU
       ],
       'Mac' => ['MAC'],
       'Mobile Gaming Console' => %w[PSP NDS XBX],
@@ -304,11 +373,12 @@ class DeviceDetector
       '4.0.3' => '3',
       '4.0.2' => '3',
       '4' => '2',
-      '2' => '1',
+      '2' => '1'
     }.freeze
 
     # https://github.com/matomo-org/device-detector/blob/75d88bbefb0182f9207c9f48dc39b1bc8c7cc43f/Parser/OperatingSystem.php#L315-L337
     LINEAGE_OS_VERSION_MAPPING = {
+      '15' => '22',
       '14' => '21',
       '13' => '20.0',
       '12.1' => '19.1',

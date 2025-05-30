@@ -56,15 +56,11 @@ class DeviceDetector
   end
 
   def os_family
-    return 'GNU/Linux' if linux_fix?
-
-    client_hint.os_family || os.family || client_hint.platform
+    os.family || client_hint.platform
   end
 
   def os_name
-    return 'GNU/Linux' if linux_fix?
-
-    client_hint.os_name || os.name || client_hint.platform
+    os.name || client_hint.platform
   end
 
   def os_full_version
@@ -240,7 +236,7 @@ class DeviceDetector
   end
 
   def os
-    @os ||= OS.new(user_agent)
+    @os ||= OS.new(user_agent, @client_hint)
   end
 
   # https://github.com/matomo-org/device-detector/blob/67ae11199a5129b42fa8b985d372ea834104fe3a/DeviceDetector.php#L931-L938
@@ -254,10 +250,7 @@ class DeviceDetector
     client.name == "#{client_hint.browser_name} Mobile"
   end
 
-  def linux_fix?
-    client_hint.platform == 'Linux' &&
-      %w[iOS Android].include?(os.name) &&
-      %w[?0 0].include?(client_hint.mobile)
+  def chrome_os_fix?
   end
 
   # Related to issue mentionned in device.rb#1562
@@ -280,6 +273,7 @@ class DeviceDetector
   end
 
   # https://github.com/matomo-org/device-detector/blob/323629cb679c8572a9745cba9c3803fee13f3cf6/Parser/OperatingSystem.php#L378-L383
+  # use version from user agent if non was provided in client hints, but os family from useragent matches
   def skip_os_version?
     !client_hint.os_family.nil? &&
       client_hint.os_version.nil? &&
@@ -327,6 +321,7 @@ class DeviceDetector
     user_agent =~ /Desktop/
   end
 
+  # https://github.com/matomo-org/device-detector/blob/323629cb679c8572a9745cba9c3803fee13f3cf6/DeviceDetector.php#L430
   def desktop?
     return false if os_name.nil? || os_name == '' || os_name == 'UNK'
 

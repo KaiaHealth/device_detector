@@ -7930,7 +7930,7 @@
   user_agent: ArcMobile2/1 CFNetwork/1494.0.5 Darwin/23.4.0
   client:
     type: browser
-    name: Arc
+    name: Arc Search
     version: ""
     engine: WebKit
     engine_version: ""
@@ -9435,7 +9435,7 @@
   user_agent: ArcMobile2/1.3.1; iPhone; iOS 16.1.1; Scale/2.00
   client:
     type: browser
-    name: Arc
+    name: Arc Search
     version: 1.3.1
     engine: WebKit
     engine_version: ""
@@ -10321,3 +10321,90 @@
     engine: Blink
     engine_version: 107.0.4280.88
     family: Chrome
+-
+  user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Skye/6.4.1 Chrome/96.0.4664.110 Electron/16.0.7 Safari/537.36
+  client:
+    type: browser
+    name: Skye
+    version: 6.4.1
+    engine: Blink
+    engine_version: 96.0.4664.110
+    family: Chrome
+-
+  user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Singlebox/38.2.0 Chrome/116.0.5845.190 Electron/26.2.2 Safari/537.36
+  client:
+    type: browser
+    name: Singlebox
+    version: 38.2.0
+    engine: Blink
+    engine_version: 116.0.5845.190
+    family: Chrome
+-
+  user_agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.60 Mobile Safari/537.36
+  client:
+    type: browser
+    name: Arc Search
+    version: ""
+    engine: Blink
+    engine_version: 130.0.6723.60
+    family: Chrome
+  headers:
+    http-x-requested-with: company.thebrowser.arc
+-
+  user_agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Mobile Safari/537.36
+  client:
+    type: browser
+    name: Chrome Webview
+    version: ""
+    engine: Blink
+    engine_version: 123.0.0.0
+    family: Chrome
+  headers:
+    http-x-requested-with: com.android.webview
+-
+  user_agent: Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36
+  client:
+    type: browser
+    name: Herond Browser
+    version: 122.0.0.0
+    engine: Blink
+    engine_version: 122.0.0.0
+    family: Chrome
+  headers:
+    Sec-CH-UA: '"Chromium";v="122", "Not(A:Brand";v="24", "Herond";v="122"'
+-
+  user_agent: Mozilla/5.0 (Windows; U; en-US; rv:1.8.1.11; Gecko/20071129; Firefox/2.5.0) Maple 6.0.00077
+  client:
+    type: browser
+    name: Maple
+    version: 6.0.00077
+    engine: Maple
+    engine_version: 6.0.00077
+    family: ""
+-
+  user_agent: Mozilla/5.0 (Linux; olleh tv; U; xx; SMT-E5015) AppleWebKit/536.25 (KHTML, like Gecko) AltiBrowser/3.0.4 (olleh tv; Large Screen) Safari/536.25
+  client:
+    type: browser
+    name: AltiBrowser
+    version: 3.0.4
+    engine: WebKit
+    engine_version: "536.25"
+    family: ""
+-
+  user_agent: NetworkingExtension/8619.1.26.30.5 Network/4277.2.5 iOS/18.0
+  client:
+    type: browser
+    name: Mobile Safari
+    version: "18.0"
+    engine: WebKit
+    engine_version: ""
+    family: Safari
+-
+  user_agent: NetworkingExtension/8619.2.8.10.9 CFNetwork/1568.200.51 Darwin/24.1.0
+  client:
+    type: browser
+    name: Safari
+    version: 8619.2.8.10
+    engine: WebKit
+    engine_version: ""
+    family: Safari

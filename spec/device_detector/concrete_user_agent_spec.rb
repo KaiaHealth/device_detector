@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative '../spec_helper'
 
 describe DeviceDetector do
@@ -12,13 +14,13 @@ describe DeviceDetector do
 
     describe '#device_name' do
       it 'returns device name' do
-        value(client.device_name).must_equal 'iPhone 5S'
+        expect(client.device_name).to eq 'iPhone 5S'
       end
     end
 
     describe '#device_type' do
       it 'returns the device type' do
-        value(client.device_type).must_equal 'smartphone'
+        expect(client.device_type).to eq 'smartphone'
       end
     end
   end
@@ -30,7 +32,7 @@ describe DeviceDetector do
 
     describe '#os_name' do
       it 'returns the OS name' do
-        value(client.os_name).must_equal 'Ubuntu'
+        expect(client.os_name).to eq 'Ubuntu'
       end
     end
   end
@@ -42,7 +44,7 @@ describe DeviceDetector do
 
     describe '#full_version' do
       it 'returns the correct OS version' do
-        value(client.os_full_version).must_equal '10.10.1'
+        expect(client.os_full_version).to eq '10.10.1'
       end
     end
   end
@@ -54,15 +56,15 @@ describe DeviceDetector do
       end
 
       it 'returns the correct client name' do
-        value(client.name).must_equal 'Chrome'
+        expect(client.name).to eq 'Chrome'
       end
 
       it 'recognizes the device name' do
-        value(client.device_name).must_be_nil
+        expect(client.device_name).must_be_nil
       end
 
       it 'recognizes the device type' do
-        value(client.device_type).must_equal 'desktop'
+        expect(client.device_type).to eq 'desktop'
       end
     end
 
@@ -72,15 +74,15 @@ describe DeviceDetector do
       end
 
       it 'returns the correct client name' do
-        value(client.name).must_equal 'Chrome'
+        expect(client.name).to eq 'Chrome'
       end
 
       it 'recognizes the device name' do
-        value(client.device_name).must_be_nil
+        expect(client.device_name).must_be_nil
       end
 
       it 'recognizes the device type' do
-        value(client.device_type).must_equal 'desktop'
+        expect(client.device_type).to eq 'desktop'
       end
     end
   end
@@ -91,15 +93,15 @@ describe DeviceDetector do
     end
 
     it 'returns the correct client name' do
-      value(client.name).must_equal 'Android Browser'
+      expect(client.name).to eq 'Android Browser'
     end
 
     it 'recognizes the device name' do
-      value(client.device_name).must_equal 'Galaxy S5'
+      expect(client.device_name).to eq 'Galaxy S5'
     end
 
     it 'recognizes the device type' do
-      value(client.device_type).must_equal 'smartphone'
+      expect(client.device_type).to eq 'smartphone'
     end
   end
 
@@ -109,15 +111,15 @@ describe DeviceDetector do
     end
 
     it 'returns the correct client name' do
-      value(client.name).must_equal 'Android Browser'
+      expect(client.name).to eq 'Android Browser'
     end
 
     it 'recognizes the device name' do
-      value(client.device_name).must_equal 'A398t+'
+      expect(client.device_name).to eq 'A398t+'
     end
 
     it 'recognizes the device type' do
-      value(client.device_type).must_equal 'smartphone'
+      expect(client.device_type).to eq 'smartphone'
     end
   end
 end

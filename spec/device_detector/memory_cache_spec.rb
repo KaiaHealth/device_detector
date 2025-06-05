@@ -14,13 +14,13 @@ describe DeviceDetector::MemoryCache do
       it 'sets the value under the key' do
         subject.set(key, 'value')
 
-        value(subject.data[key]).must_equal 'value'
+        expect(subject.data[key]).to eq 'value'
       end
 
       it 'returns the value' do
-        value(subject.set(key, 'value')).must_equal 'value'
-        value(subject.set(key, false)).must_equal false
-        assert_nil subject.set(key, nil)
+        expect(subject.set(key, 'value')).to eq 'value'
+        expect(subject.set(key, false)).to eq false
+        expect(subject.set(key, nil)).to be_nil
       end
     end
 
@@ -30,7 +30,7 @@ describe DeviceDetector::MemoryCache do
       it 'sets the value under the key' do
         subject.set(key, 'value')
 
-        value(subject.data[String(key)]).must_equal 'value'
+        expect(subject.data[String(key)]).to eq 'value'
       end
     end
 
@@ -41,15 +41,15 @@ describe DeviceDetector::MemoryCache do
       it 'sets the value under the key' do
         subject.set(key, nil)
 
-        value(subject.data[String(key)]).must_equal internal_value
-        assert_nil subject.get(key)
+        expect(subject.data[String(key)]).to eq internal_value
+        expect(subject.get(key)).to be_nil
       end
 
       it 'sets the value under the key' do
         subject.get_or_set(key, nil)
 
-        value(subject.data[String(key)]).must_equal internal_value
-        assert_nil subject.get(key)
+        expect(subject.data[String(key)]).to eq internal_value
+        expect(subject.get(key)).to be_nil
       end
     end
 
@@ -59,15 +59,15 @@ describe DeviceDetector::MemoryCache do
       it 'sets the value under the key' do
         subject.set(key, false)
 
-        value(subject.data[String(key)]).must_equal false
-        value(subject.get(key)).must_equal false
+        expect(subject.data[String(key)]).to eq false
+        expect(subject.get(key)).to eq false
       end
 
       it 'sets the value under the key' do
         subject.get_or_set(key, false)
 
-        value(subject.data[String(key)]).must_equal false
-        value(subject.get(key)).must_equal false
+        expect(subject.data[String(key)]).to eq false
+        expect(subject.get(key)).to eq false
       end
     end
   end
@@ -79,7 +79,7 @@ describe DeviceDetector::MemoryCache do
       it 'gets the value for the key' do
         subject.data[key] = 'value'
 
-        value(subject.get(key)).must_equal 'value'
+        expect(subject.get(key)).to eq 'value'
       end
     end
 
@@ -89,7 +89,7 @@ describe DeviceDetector::MemoryCache do
       it 'gets the value for the key' do
         subject.data[String(key)] = 'value'
 
-        value(subject.get(key)).must_equal 'value'
+        expect(subject.get(key)).to eq 'value'
       end
     end
   end
@@ -106,13 +106,13 @@ describe DeviceDetector::MemoryCache do
           block_called = true
         end
 
-        value(value).must_equal 'value'
-        value(block_called).must_equal false
+        expect(value).to eq 'value'
+        expect(block_called).to eq false
       end
 
       it 'returns the value' do
         subject.data[key] = 'value2'
-        value(subject.get_or_set(key, 'value')).must_equal 'value2'
+        expect(subject.get_or_set(key, 'value')).to eq 'value2'
       end
     end
 
@@ -123,12 +123,12 @@ describe DeviceDetector::MemoryCache do
           block_called = true
         end
 
-        value(block_called).must_equal true
-        value(subject.data[key]).must_equal true
+        expect(block_called).to eq true
+        expect(subject.data[key]).to eq true
       end
 
       it 'returns the value' do
-        value(subject.get_or_set(key, 'value')).must_equal 'value'
+        expect(subject.get_or_set(key, 'value')).to eq 'value'
       end
     end
   end
@@ -142,7 +142,7 @@ describe DeviceDetector::MemoryCache do
       subject.set('3', 'baz')
       subject.set('4', 'boz')
 
-      value(subject.data.keys.size).must_equal 3
+      expect(subject.data.keys.size).to eq 3
     end
   end
 end

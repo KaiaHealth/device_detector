@@ -1,7 +1,7 @@
-require_relative '../spec_helper'
+# frozen_string_literal: true
 
-describe DeviceDetector::Bot do
-  fixture_dir = File.expand_path('../fixtures/parser', __dir__)
+describe DeviceDetector::Parser::Bot do
+  fixture_dir = File.expand_path('../../fixtures/detector', __dir__)
   fixture_files = Dir["#{fixture_dir}/bots.yml"]
   fixture_files.each do |fixture_file|
     describe File.basename(fixture_file) do
@@ -15,11 +15,11 @@ describe DeviceDetector::Bot do
 
         describe user_agent do
           it 'should be a bot' do
-            assert device.bot?, "isn't a bot"
+            expect(device.bot?).to eq(true)
           end
 
           it 'should have the expected name' do
-            assert_equal f['bot']['name'], device.name, 'failed bot name detection'
+            expect(device.bot_name).to eq(f['bot']['name'])
           end
         end
       end

@@ -15,49 +15,49 @@ describe DeviceDetector do
 
       describe '#name' do
         it 'returns the name' do
-          value(client.name).must_equal 'Chrome'
+          expect(client.name).to eq 'Chrome'
         end
       end
 
       describe '#full_version' do
         it 'returns the full version' do
-          value(client.full_version).must_equal '30.0.1599.69'
+          expect(client.full_version).to eq '30.0.1599.69'
         end
       end
 
       describe '#os_family' do
         it 'returns the operating system name' do
-          value(client.os_family).must_equal 'Mac'
+          expect(client.os_family).to eq 'Mac'
         end
       end
 
       describe '#os_name' do
         it 'returns the operating system name' do
-          value(client.os_name).must_equal 'Mac'
+          expect(client.os_name).to eq 'Mac'
         end
       end
 
       describe '#os_full_version' do
         it 'returns the operating system full version' do
-          value(client.os_full_version).must_equal '10.8.5'
+          expect(client.os_full_version).to eq '10.8.5'
         end
       end
 
       describe '#known?' do
         it 'returns true' do
-          value(client.known?).must_equal true
+          expect(client.known?).to eq true
         end
       end
 
       describe '#bot?' do
         it 'returns false' do
-          value(client.bot?).must_equal false
+          expect(client.bot?).to eq false
         end
       end
 
       describe '#bot_name' do
         it 'returns nil' do
-          value(client.bot_name).must_be_nil
+          expect(client.bot_name).to be_nil
         end
       end
     end
@@ -69,13 +69,13 @@ describe DeviceDetector do
 
       describe '#os_family' do
         it 'returns the operating system name' do
-          value(client.os_family).must_equal 'GNU/Linux'
+          expect(client.os_family).to eq 'GNU/Linux'
         end
       end
 
       describe '#os_name' do
         it 'returns the operating system name' do
-          value(client.os_name).must_equal 'Ubuntu'
+          expect(client.os_name).to eq 'Ubuntu'
         end
       end
     end
@@ -84,7 +84,7 @@ describe DeviceDetector do
       let(:user_agent) { 'Mozilla/5.0 (Android 7.0; Mobile; rv:53.0) Gecko/53.0 Firefox/53.0' }
 
       it 'detects smartphone' do
-        value(client.device_type).must_equal 'smartphone'
+        expect(client.device_type).to eq 'smartphone'
       end
     end
 
@@ -92,7 +92,7 @@ describe DeviceDetector do
       let(:user_agent) { 'Mozilla/5.0 (Android 6.0.1; Tablet; rv:47.0) Gecko/47.0 Firefox/47.0' }
 
       it 'detects tablet' do
-        value(client.device_type).must_equal 'tablet'
+        expect(client.device_type).to eq 'tablet'
       end
     end
   end
@@ -102,43 +102,43 @@ describe DeviceDetector do
 
     describe '#name' do
       it 'returns nil' do
-        value(client.name).must_be_nil
+        expect(client.name).to be_nil
       end
     end
 
     describe '#full_version' do
       it 'returns nil' do
-        value(client.full_version).must_be_nil
+        expect(client.full_version).to be_nil
       end
     end
 
     describe '#os_name' do
       it 'returns nil' do
-        value(client.os_name).must_be_nil
+        expect(client.os_name).to be_nil
       end
     end
 
     describe '#os_full_version' do
       it 'returns nil' do
-        value(client.os_full_version).must_be_nil
+        expect(client.os_full_version).to be_nil
       end
     end
 
     describe '#known?' do
       it 'returns false' do
-        value(client.known?).must_equal false
+        expect(client.known?).to eq false
       end
     end
 
     describe '#bot?' do
       it 'returns false' do
-        value(client.bot?).must_equal false
+        expect(client.bot?).to eq false
       end
     end
 
     describe '#bot_name' do
       it 'returns nil' do
-        value(client.bot_name).must_be_nil
+        expect(client.bot_name).to be_nil
       end
     end
   end
@@ -148,43 +148,43 @@ describe DeviceDetector do
 
     describe '#name' do
       it 'returns nil' do
-        value(client.name).must_be_nil
+        expect(client.name).to be_nil
       end
     end
 
     describe '#full_version' do
       it 'returns nil' do
-        value(client.full_version).must_be_nil
+        expect(client.full_version).to be_nil
       end
     end
 
     describe '#os_name' do
       it 'returns nil' do
-        value(client.os_name).must_be_nil
+        expect(client.os_name).to be_nil
       end
     end
 
     describe '#os_full_version' do
       it 'returns nil' do
-        value(client.os_full_version).must_be_nil
+        expect(client.os_full_version).to be_nil
       end
     end
 
     describe '#known?' do
       it 'returns false' do
-        value(client.known?).must_equal false
+        expect(client.known?).to eq false
       end
     end
 
     describe '#bot?' do
       it 'returns false' do
-        value(client.bot?).must_equal false
+        expect(client.bot?).to eq false
       end
     end
 
     describe '#bot_name' do
       it 'returns nil' do
-        value(client.bot_name).must_be_nil
+        expect(client.bot_name).to be_nil
       end
     end
   end
@@ -194,43 +194,43 @@ describe DeviceDetector do
 
     describe '#name' do
       it 'returns nil' do
-        value(client.name).must_be_nil
+        expect(client.name).to be_nil
       end
     end
 
     describe '#full_version' do
       it 'returns nil' do
-        value(client.full_version).must_be_nil
+        expect(client.full_version).to be_nil
       end
     end
 
     describe '#os_name' do
       it 'returns nil' do
-        value(client.os_name).must_be_nil
+        expect(client.os_name).to be_nil
       end
     end
 
     describe '#os_full_version' do
       it 'returns nil' do
-        value(client.os_full_version).must_be_nil
+        expect(client.os_full_version).to be_nil
       end
     end
 
     describe '#known?' do
       it 'returns false' do
-        value(client.known?).must_equal false
+        expect(client.known?).to eq false
       end
     end
 
     describe '#bot?' do
       it 'returns false' do
-        value(client.bot?).must_equal false
+        expect(client.bot?).to eq false
       end
     end
 
     describe '#bot_name' do
       it 'returns nil' do
-        value(client.bot_name).must_be_nil
+        expect(client.bot_name).to be_nil
       end
     end
   end
@@ -240,43 +240,43 @@ describe DeviceDetector do
 
     describe '#name' do
       it 'returns nil' do
-        value(client.name).must_be_nil
+        expect(client.name).to be_nil
       end
     end
 
     describe '#full_version' do
       it 'returns nil' do
-        value(client.full_version).must_be_nil
+        expect(client.full_version).to be_nil
       end
     end
 
     describe '#os_name' do
       it 'returns nil' do
-        value(client.os_name).must_be_nil
+        expect(client.os_name).to be_nil
       end
     end
 
     describe '#os_full_version' do
       it 'returns nil' do
-        value(client.os_full_version).must_be_nil
+        expect(client.os_full_version).to be_nil
       end
     end
 
     describe '#known?' do
       it 'returns false' do
-        value(client.known?).must_equal false
+        expect(client.known?).to eq false
       end
     end
 
     describe '#bot?' do
       it 'returns true' do
-        value(client.bot?).must_equal true
+        expect(client.bot?).to eq true
       end
     end
 
     describe '#bot_name' do
       it 'returns the name of the bot' do
-        value(client.bot_name).must_equal 'Googlebot'
+        expect(client.bot_name).to eq 'Googlebot'
       end
     end
   end

@@ -1,6 +1,9 @@
 # Change Log
 
-Update detection rules from upstream on 2024-11-04
+## [2.0.0]
+
+Breaking change: remove public method `DeviceDetector#build_user_agent`
+Breaking change: remove public method `DeviceDetector#encode_user_agent_if_needed`
 
 ## [1.1.3]
 

@@ -1,0 +1,21 @@
+# frozen_string_literal: true
+
+class DeviceDetector
+  module Parser
+    module Client
+      class Pim
+        include AbstractClientParser
+
+        protected
+
+        def fixture_file
+          'regexes/client/pim.yml'
+        end
+
+        def parser_name
+          'pim'
+        end
+      end
+    end
+  end
+end

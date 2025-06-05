@@ -3,197 +3,95 @@
 require 'yaml'
 
 require 'device_detector/version'
-require 'device_detector/metadata_extractor'
-require 'device_detector/version_extractor'
-require 'device_detector/model_extractor'
-require 'device_detector/name_extractor'
 require 'device_detector/memory_cache'
-require 'device_detector/parser'
-require 'device_detector/bot'
-require 'device_detector/client'
-require 'device_detector/device'
-require 'device_detector/os'
-require 'device_detector/browser'
+
 require 'device_detector/client_hint'
-require 'device_detector/vendor_fragment'
+
+require 'device_detector/parser/abstract_parser'
+require 'device_detector/parser/bot'
+require 'device_detector/parser/operating_system'
+require 'device_detector/parser/client/abstract_client_parser'
+require 'device_detector/parser/client/feed_reader'
+require 'device_detector/parser/client/mobile_app'
+require 'device_detector/parser/client/media_player'
+require 'device_detector/parser/client/pim'
+require 'device_detector/parser/client/browser'
+require 'device_detector/parser/client/library'
 
 class DeviceDetector
+  MAJOR_VERSION_2 = Gem::Version.new('2.0')
+  MAJOR_VERSION_3 = Gem::Version.new('3.0')
+  MAJOR_VERSION_4 = Gem::Version.new('4.0')
+
   attr_reader :client_hint, :user_agent
 
   def initialize(user_agent, headers = nil)
-    @client_hint = ClientHint.new(headers)
-    utf8_user_agent = encode_user_agent_if_needed(user_agent)
-    @user_agent = build_user_agent(utf8_user_agent)
-  end
+    self.user_agent = user_agent
+    self.headers = headers
 
-  # https://github.com/matomo-org/device-detector/blob/a2535ff3b63e4187f1d3440aed24ff43d74fb7f1/Parser/Device/AbstractDeviceParser.php#L2065-L2073
-  def build_user_agent(user_agent)
-    return user_agent if client_hint.model.nil?
+    @parsers = {}
 
-    regex = build_regex('Android 10[.\d]*; K(?: Build/|[;)])')
-    return user_agent unless user_agent =~ regex
+    add_parser(Parser::Client::FeedReader.new)
+    add_parser(Parser::Client::MobileApp.new)
+    add_parser(Parser::Client::MediaPlayer.new)
+    add_parser(Parser::Client::Pim.new)
+    add_parser(Parser::Client::Browser.new)
+    add_parser(Parser::Client::Library.new)
 
-    version = client_hint.os_version || '10'
+    # TODO: add device parsers
 
-    user_agent.gsub(/(Android 10[.\d]*; K)/, "Android #{version}; #{client_hint.model}")
-  end
+    add_parser(Parser::Bot.new)
 
-  def encode_user_agent_if_needed(user_agent)
-    return if user_agent.nil?
-    return user_agent if user_agent.encoding.name == 'UTF-8'
-
-    user_agent.encode('utf-8', 'binary', undef: :replace)
+    reset
+    parse
   end
 
   def name
-    return client.name if mobile_fix?
+    return unless @client
 
-    client_hint.browser_name || client.name
+    @client['name']
   end
 
   def full_version
-    client_hint.full_version || client.full_version
+    return unless @client
+
+    @client['version']
   end
 
   def os_family
-    os.family || client_hint.platform
+    @os&.fetch('family', nil)
   end
 
   def os_name
-    os.name || client_hint.platform
+    @os&.fetch('name', nil)
   end
 
   def os_full_version
-    return if skip_os_version?
-    return os.full_version if pico_os_fix?
-    return fire_os_version if fire_os_fix?
-
-    client_hint.os_version || os.full_version
+    @os&.fetch('version', nil)
   end
 
   def device_name
-    return if fake_ua?
-
-    device.name || client_hint.model || fix_for_x_music
+    @model
   end
 
   def device_brand
-    return if fake_ua?
-
-    # Assume all devices running iOS / Mac OS are from Apple
-    brand = device.brand
-    brand = 'Apple' if brand.nil? && DeviceDetector::OS::APPLE_OS_NAMES.include?(os_name)
-
-    brand
+    @brand
   end
 
   def device_type
-    t = device.type
-
-    t = nil if fake_ua?
-
-    # Chrome on Android passes the device type based on the keyword 'Mobile'
-    # If it is present the device should be a smartphone, otherwise it's a tablet
-    # See https://developer.chrome.com/multidevice/user-agent#chrome_for_android_user_agent
-    # Note: We do not check for browser (family) here, as there might be mobile apps using Chrome,
-    # that won't have a detected browser, but can still be detected. So we check the useragent for
-    # Chrome instead.
-    if t.nil? && os_family == 'Android' && user_agent =~ build_regex('Chrome\/[\.0-9]*')
-      t = user_agent =~ build_regex('(?:Mobile|eliboM)') ? 'smartphone' : 'tablet'
-    end
-
-    # Some UA contain the fragment 'Pad/APad', so we assume those devices as tablets
-    t = 'tablet' if t == 'smartphone' && user_agent =~ build_regex('Pad\/APad')
-
-    # Some UA contain the fragment 'Android; Tablet;' or 'Opera Tablet', so we assume those devices
-    # as tablets
-    t = 'tablet' if t.nil? && (android_tablet_fragment? || opera_tablet?)
-
-    # Some user agents simply contain the fragment 'Android; Mobile;', so we assume those devices
-    # as smartphones
-    t = 'smartphone' if t.nil? && android_mobile_fragment?
-
-    # Some UA contains the 'Android; Mobile VR;' fragment
-    t = 'wearable' if t.nil? && android_vr_fragment?
-
-    # Android up to 3.0 was designed for smartphones only. But as 3.0,
-    # which was tablet only, was published too late, there were a
-    # bunch of tablets running with 2.x With 4.0 the two trees were
-    # merged and it is for smartphones and tablets
-    #
-    # So were are expecting that all devices running Android < 2 are
-    # smartphones Devices running Android 3.X are tablets. Device type
-    # of Android 2.X and 4.X+ are unknown
-    if t.nil? && os_name == 'Android' && os.full_version && !os.full_version.empty?
-      full_version = Gem::Version.new(os.full_version)
-      if full_version < VersionExtractor::MAJOR_VERSION_2
-        t = 'smartphone'
-      elsif full_version >= VersionExtractor::MAJOR_VERSION_3 && \
-            full_version < VersionExtractor::MAJOR_VERSION_4
-        t = 'tablet'
-      end
-    end
-
-    # All detected feature phones running android are more likely a smartphone
-    t = 'smartphone' if t == 'feature phone' && os_family == 'Android'
-
-    # All unknown devices under running Java ME are more likely a features phones
-    t = 'feature phone' if t.nil? && os_name == 'Java ME'
-
-    # According to http://msdn.microsoft.com/en-us/library/ie/hh920767(v=vs.85).aspx
-    # Internet Explorer 10 introduces the "Touch" UA string token. If this token is present at the
-    # end of the UA string, the computer has touch capability, and is running Windows 8 (or later).
-    # This UA string will be transmitted on a touch-enabled system running Windows 8 (RT)
-    #
-    # As most touch enabled devices are tablets and only a smaller part are desktops/notebooks we
-    # assume that all Windows 8 touch devices are tablets.
-    if t.nil? && touch_enabled? &&
-       (os_name == 'Windows RT' ||
-        (os_name == 'Windows' && os_full_version &&
-         Gem::Version.new(os_full_version) >= VersionExtractor::MAJOR_VERSION_8))
-      t = 'tablet'
-    end
-
-    # All devices running Opera TV Store are assumed to be a tv
-    t = 'tv' if opera_tv_store?
-
-    # All devices that contain Andr0id in string are assumed to be a tv
-    if user_agent =~ build_regex('Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA')
-      t = 'tv'
-    end
-
-    # All devices running Tizen TV or SmartTV are assumed to be a tv
-    t = 'tv' if t.nil? && tizen_samsung_tv?
-
-    # Devices running those clients are assumed to be a TV
-    t = 'tv' if ['Kylo', 'Espial TV Browser', 'LUJO TV Browser', 'LogicUI TV Browser',
-                 'Open TV Browser', 'Seraphic Sraf', 'Opera Devices', 'Crow Browser',
-                 'Vewd Browser', 'TiviMate', 'Quick Search TV', 'QJY TV Browser',
-                 'TV Bro'].include?(name)
-
-    # All devices containing TV fragment are assumed to be a tv
-    t = 'tv' if t.nil? && user_agent =~ build_regex('\(TV;')
-
-    has_desktop = t != 'desktop' && desktop_string? && desktop_fragment?
-    t = 'desktop' if has_desktop
-
-    # set device type to desktop for all devices running a desktop os that were not detected as
-    # another device type
-    return t if t || !desktop?
-
-    'desktop'
+    @device
   end
 
   def known?
-    client.known?
+    !@client.nil?
   end
 
   def bot?
-    bot.bot?
+    @bot ? true : false
   end
 
   def bot_name
-    bot.name
+    @bot&.fetch('name', nil)
   end
 
   class << self
@@ -223,115 +121,231 @@ class DeviceDetector
 
   private
 
-  def bot
-    @bot ||= Bot.new(user_agent)
+  def parse
+    return if @parsed
+
+    @parsed = true
+
+    return if (@user_agent.empty? || @user_agent !~ /[a-z]/i) && @client_hints.nil?
+
+    parse_bot
+    return if bot?
+
+    parse_os
+    parse_client
+    parse_device
   end
 
-  def client
-    @client ||= Client.new(user_agent)
+  # COPY_COMPLETE
+  def parse_bot
+    @parsers.fetch(:bot, []).each do |parser|
+      parser.user_agent = @user_agent
+      parser.client_hints = @client_hints
+
+      bot = parser.parse
+
+      if bot
+        @bot = bot
+        break
+      end
+    end
   end
 
-  def device
-    @device ||= Device.new(user_agent)
+  def parse_os
+    parser = Parser::OperatingSystem.new
+    parser.user_agent = @user_agent
+    parser.client_hints = @client_hints
+
+    @os = parser.parse
   end
 
-  def os
-    @os ||= OS.new(user_agent, @client_hint)
+  def parse_client
+    @parsers.fetch(:client, []).each do |parser|
+      parser.user_agent = @user_agent
+      parser.client_hints = @client_hints
+
+      client = parser.parse
+
+      if client
+        @client = client
+        break
+      end
+    end
   end
 
-  # https://github.com/matomo-org/device-detector/blob/67ae11199a5129b42fa8b985d372ea834104fe3a/DeviceDetector.php#L931-L938
-  def fake_ua?
-    device.brand == 'Apple' && !DeviceDetector::OS::APPLE_OS_NAMES.include?(os_name)
+  def parse_device
+    @parsers.fetch(:device, []).each do |parser|
+      parser.user_agent = @user_agent
+      parser.client_hints = @client_hints
+
+      device = parser.parse
+
+      next unless device
+
+      @device = device.device_type
+      @model = device.model
+      @brand = device.brand
+      break
+    end
+
+    @model = @client_hints.model if !@model && @client_hints
+
+    unless @brand
+      vendor_parser = new VendorFragment(@user_agent)
+      @brand = vendor_parser.parse || nil
+    end
+
+    if @brand == 'Apple' && !DeviceDetector::Parser::OperatingSystem::APPLE_OS_NAMES.include?(os_name)
+      @device = nil
+      @brand = nil
+      @model = nil
+    end
+
+    if @brand && DeviceDetector::Parser::OperatingSystem::APPLE_OS_NAMES.include?(os_name)
+      @brand = 'Apple'
+    end
+
+    @device = 'wearable' if @device.nil? && android_vr_fragment?
+
+    if @device.nil? && os_family == 'Android' \
+      && match_user_agent('Chrome/[.0-9]*')
+
+      @device = if match_user_agent('(?:Mobile|eliboM)')
+                  'smartphone'
+                else
+                  'tablet'
+                end
+    end
+
+    @device = 'tablet' if @device == 'smartphone' && match_user_agent('Pad/APad')
+
+    if @device.nil? && (android_tablet_fragment? \
+      || match_user_agent('Opera Tablet'))
+      @device = 'tablet'
+    end
+
+    @device = 'smartphone' unless @device.nil? && android_mobile_fragment?
+
+    if @device.nil? && os_name == 'Android' && !os_full_version.empty?
+      full_version = Gem::Version.new(os_full_version)
+      if full_version < MAJOR_VERSION_2
+        @device = 'smartphone'
+      elsif full_version >= MAJOR_VERSION_3 &&
+            full_version < MAJOR_VERSION_4
+        @device = 'tablet'
+      end
+    end
+
+    @device = 'smartphone' if @device == 'feature phone' && os_family == 'Android'
+
+    @device = 'feature phone' if @device.nil? && os_name == 'Java ME'
+
+    @device = 'feature phone' if os_name == 'KaiOS'
+
+    if @device.nil? && touch_enabled? &&
+       (os_name == 'Windows RT' ||
+        (os_name == 'Windows' && os_full_version &&
+         Gem::Version.new(os_full_version) >= VersionExtractor::MAJOR_VERSION_8))
+      @device = 'tablet'
+    end
+
+    @device = 'desktop' if @device.nil? && match_user_agent('Puffin/(?:\d+[.\d]+)[LMW]D')
+
+    @device = 'smartphone' if @device.nil? && match_user_agent('Puffin/(?:\d+[.\d]+)[AIFLW]P')
+
+    @device = 'tablet' if @device.nil? && match_user_agent('Puffin/(?:\d+[.\d]+)[AILW]T')
+
+    @device = 'tv' if match_user_agent('Opera TV Store| OMI/')
+
+    @device = 'tv' if os_name == 'Coolita OS'
+
+    if !%w[tv periphereal].include?(@device) &&
+       match_user_agent('Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA| TV$')
+      @device = 'tv'
+    end
+
+    @device = 'tv' if @device.nil? && match_user_agent('SmartTV|Tizen.+ TV .+$')
+
+    if DeviceDetector::Parser::Client::AbstractClientParser::TV_CLIENT_NAMES.include?(name)
+      @device = 'tv'
+    end
+
+    @device = 'tv' if @device.nil? && match_user_agent('\(TV;')
+
+    @device = 'desktop' if @device != 'desktop' && !match_user_agent('Desktop') && desktop_fragment?
+
+    return if @device.nil? && !desktop?
+
+    @device = 'desktop'
   end
 
-  # https://github.com/matomo-org/device-detector/blob/be1c9ef486c247dc4886668da5ed0b1c49d90ba8/Parser/Client/Browser.php#L772
-  # Fix mobile browser names e.g. Chrome => Chrome Mobile
-  def mobile_fix?
-    client.name == "#{client_hint.browser_name} Mobile"
+  # Sets the useragent to be parsed
+  # https://github.com/matomo-org/device-detector/blob/6.4.5/DeviceDetector.php#L245
+  def user_agent=(user_agent)
+    reset if @user_agent != user_agent
+
+    @user_agent = user_agent || ''
   end
 
-  def chrome_os_fix?
+  def headers=(headers)
+    @headers = headers
+    @headers ||= {}
+
+    @client_hints = ClientHint.new(@headers)
   end
 
-  # Related to issue mentionned in device.rb#1562
-  def fix_for_x_music
-    user_agent&.include?('X-music Ⅲ') ? 'X-Music III' : nil
+  # Resets all detected data
+  def reset
+    @bot    = nil
+    @client = nil
+    @device = nil
+    @os     = nil
+    @brand  = ''
+    @model  = ''
+    @parsed = false
   end
 
-  def pico_os_fix?
-    client_hint.os_name == 'Pico OS'
+  def add_parser(parser)
+    type = parser.parser_type
+
+    @parsers[type] ||= []
+    @parsers[type] << parser
   end
 
-  # https://github.com/matomo-org/device-detector/blob/323629cb679c8572a9745cba9c3803fee13f3cf6/Parser/OperatingSystem.php#L398-L403
-  def fire_os_fix?
-    !client_hint.platform.nil? && os.name == 'Fire OS'
-  end
+  def match_user_agent(regex)
+    src = regex.gsub('/', '\/')
+    regexp = Regexp.new("(?:^|[^A-Z_-])(?:#{src})", Regexp::IGNORECASE)
+    match = @user_agent.match(regexp)
+    return unless match
 
-  def fire_os_version
-    DeviceDetector::OS
-      .mapped_os_version(client_hint.os_version, DeviceDetector::OS::FIRE_OS_VERSION_MAPPING)
-  end
-
-  # https://github.com/matomo-org/device-detector/blob/323629cb679c8572a9745cba9c3803fee13f3cf6/Parser/OperatingSystem.php#L378-L383
-  # use version from user agent if non was provided in client hints, but os family from useragent matches
-  def skip_os_version?
-    !client_hint.os_family.nil? &&
-      client_hint.os_version.nil? &&
-      client_hint.os_family != os.family
-  end
-
-  def android_tablet_fragment?
-    user_agent =~ build_regex('Android( [\.0-9]+)?; Tablet;|Tablet(?! PC)|.*\-tablet$')
-  end
-
-  def android_mobile_fragment?
-    user_agent =~ build_regex('Android( [\.0-9]+)?; Mobile;|.*\-mobile$')
+    match.captures || []
   end
 
   def android_vr_fragment?
-    user_agent =~ build_regex('Android( [\.0-9]+)?; Mobile VR;| VR ')
+    match_user_agent('Android( [.0-9]+)?; Mobile VR;| VR ')
+  end
+
+  def android_tablet_fragment?
+    match_user_agent('Android( [.0-9]+)?; Tablet;|Tablet(?! PC)|.*\-tablet$')
+  end
+
+  def android_mobile_fragment?
+    match_user_agent('Android( [.0-9]+)?; Mobile;|.*\-mobile$')
   end
 
   def desktop_fragment?
-    user_agent =~ build_regex('Desktop(?: (x(?:32|64)|WOW64))?;')
+    match_user_agent('Desktop(?: (x(?:32|64)|WOW64))?;')
   end
 
-  def touch_enabled?
-    user_agent =~ build_regex('Touch')
-  end
+  def desktop?
+    return false if os_name.nil? || os_name.empty? || os_name == 'UNK'
 
-  def opera_tv_store?
-    user_agent =~ build_regex('Opera TV Store|OMI/')
-  end
+    return false if uses_mobile_browser?
 
-  def opera_tablet?
-    user_agent =~ build_regex('Opera Tablet')
-  end
-
-  def tizen_samsung_tv?
-    user_agent =~ build_regex('SmartTV|Tizen.+ TV .+$')
+    DeviceDetector::Parser::OperatingSystem.desktop_os?(os_name)
   end
 
   def uses_mobile_browser?
-    client.browser? && client.mobile_only_browser?
-  end
-
-  # This is a workaround until we support detecting mobile only browsers
-  def desktop_string?
-    user_agent =~ /Desktop/
-  end
-
-  # https://github.com/matomo-org/device-detector/blob/323629cb679c8572a9745cba9c3803fee13f3cf6/DeviceDetector.php#L430
-  def desktop?
-    return false if os_name.nil? || os_name == '' || os_name == 'UNK'
-
-    # Check for browsers available for mobile devices only
-    return false if uses_mobile_browser?
-
-    DeviceDetector::OS::DESKTOP_OSS.include?(os_family)
-  end
-
-  def build_regex(src)
-    Regexp.new('(?:^|[^A-Z0-9\_\-])(?:' + src + ')', Regexp::IGNORECASE)
+    @client&.fetch('type') == 'browser' && DeviceDetector::Parser::Client::Browser.mobile_only_browser?(name)
   end
 end

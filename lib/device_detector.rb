@@ -17,6 +17,15 @@ require 'device_detector/parser/client/media_player'
 require 'device_detector/parser/client/pim'
 require 'device_detector/parser/client/browser'
 require 'device_detector/parser/client/library'
+require 'device_detector/parser/device/abstract_device_parser'
+require 'device_detector/parser/device/hbb_tv'
+require 'device_detector/parser/device/shell_tv'
+require 'device_detector/parser/device/notebook'
+require 'device_detector/parser/device/console'
+require 'device_detector/parser/device/car_browser'
+require 'device_detector/parser/device/camera'
+require 'device_detector/parser/device/portable_media_player'
+require 'device_detector/parser/device/mobile'
 
 class DeviceDetector
   MAJOR_VERSION_2 = Gem::Version.new('2.0')
@@ -39,6 +48,14 @@ class DeviceDetector
     add_parser(Parser::Client::Library.new)
 
     # TODO: add device parsers
+    add_parser(Parser::Device::HbbTv.new)
+    add_parser(Parser::Device::ShellTv.new)
+    add_parser(Parser::Device::Notebook.new)
+    add_parser(Parser::Device::Console.new)
+    add_parser(Parser::Device::CarBrowser.new)
+    add_parser(Parser::Device::Camera.new)
+    add_parser(Parser::Device::PortableMediaPlayer.new)
+    add_parser(Parser::Device::Mobile.new)
 
     add_parser(Parser::Bot.new)
 
@@ -182,9 +199,9 @@ class DeviceDetector
 
       next unless device
 
-      @device = device.device_type
-      @model = device.model
-      @brand = device.brand
+      @device = device['device_type']
+      @model = device['model']
+      @brand = device['brand']
       break
     end
 

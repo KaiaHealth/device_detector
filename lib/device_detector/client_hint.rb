@@ -13,12 +13,13 @@ class DeviceDetector
       @ua_full_version = ''
       @platform = ''
       @platform_version = ''
+      @form_factors = []
 
       parse_headers(headers)
     end
 
     attr_reader :architecture, :bitness, :mobile, :model, :ua_full_version, :platform,
-                :platform_version, :app
+                :platform_version, :app, :form_factors
 
     def operating_system
       platform

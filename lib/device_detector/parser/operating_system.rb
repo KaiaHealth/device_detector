@@ -73,7 +73,7 @@ class DeviceDetector
         family = os_family(short)
 
         if @client_hints
-          if ANDROID_APPS.include?(@client_hints.app) && name != 'Android'
+          if name != 'Android' && ANDROID_APPS.include?(@client_hints.app)
             name = 'Android'
             family = 'Android'
             short = 'ADR'
@@ -451,9 +451,9 @@ class DeviceDetector
         end
 
         {
-          name: name,
-          short_name: short,
-          version: build_version(version, [])
+          'name' => name,
+          'short_name' => short,
+          'version' => build_version(version, [])
         }
       end
 

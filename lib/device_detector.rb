@@ -10,6 +10,7 @@ require 'device_detector/client_hint'
 require 'device_detector/parser/abstract_parser'
 require 'device_detector/parser/bot'
 require 'device_detector/parser/operating_system'
+require 'device_detector/parser/vendor_fragment'
 require 'device_detector/parser/client/abstract_client_parser'
 require 'device_detector/parser/client/feed_reader'
 require 'device_detector/parser/client/mobile_app'
@@ -156,8 +157,7 @@ class DeviceDetector
   # COPY_COMPLETE
   def parse_bot
     @parsers.fetch(:bot, []).each do |parser|
-      parser.user_agent = @user_agent
-      parser.client_hints = @client_hints
+      parser.use(@user_agent, @client_hints)
 
       bot = parser.parse
 
@@ -170,16 +170,14 @@ class DeviceDetector
 
   def parse_os
     parser = Parser::OperatingSystem.new
-    parser.user_agent = @user_agent
-    parser.client_hints = @client_hints
+    parser.use(@user_agent, @client_hints)
 
     @os = parser.parse
   end
 
   def parse_client
     @parsers.fetch(:client, []).each do |parser|
-      parser.user_agent = @user_agent
-      parser.client_hints = @client_hints
+      parser.use(@user_agent, @client_hints)
 
       client = parser.parse
 
@@ -192,8 +190,7 @@ class DeviceDetector
 
   def parse_device
     @parsers.fetch(:device, []).each do |parser|
-      parser.user_agent = @user_agent
-      parser.client_hints = @client_hints
+      parser.use(@user_agent, @client_hints)
 
       device = parser.parse
 
@@ -208,7 +205,7 @@ class DeviceDetector
     @model = @client_hints.model if !@model && @client_hints
 
     unless @brand
-      vendor_parser = new VendorFragment(@user_agent)
+      vendor_parser = DeviceDetector::Parser::VendorFragment.new(@user_agent)
       @brand = vendor_parser.parse || nil
     end
 

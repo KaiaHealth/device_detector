@@ -1,10 +1,18 @@
 # frozen_string_literal: true
 
+require 'device_detector/parser/client/hint/browser_hints'
+
 class DeviceDetector
   module Parser
     module Client
       class Browser
         include AbstractClientParser
+
+        def use(uas, hints)
+          super
+          @browser_hints = DeviceDetector::Parser::Client::Hint::BrowserHints.new
+          @browser_hints.use(uas, hints)
+        end
 
         AVAILABLE_BROWSERS = {
           'V1' => 'Via',
@@ -755,6 +763,16 @@ class DeviceDetector
 
           # family
           # TODO: https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/Client/Browser.php#L1066
+          app_hash = @browser_hints.parse
+          if app_hash&.fetch('name', nil) != nil
+            name = app_hash['name']
+            version = ''
+            short = browser_short_name(name)
+
+            # not implemented:
+            # if match_user_agent('Chrome/.+ Safari/537.36')
+            # engine + family only
+          end
 
           return nil if (name.nil? || name == '') || @user_agent.match?(/Cypress|PhantomJS/)
 

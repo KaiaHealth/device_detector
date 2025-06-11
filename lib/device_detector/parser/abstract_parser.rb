@@ -12,6 +12,11 @@ class DeviceDetector
         @result = nil
       end
 
+      def use(uas, hints)
+        @user_agent = uas
+        @client_hints = hints
+      end
+
       def user_agent=(uas)
         @user_agent = uas
       end
@@ -93,7 +98,10 @@ class DeviceDetector
       def regexes
         REGEX_CACHE.get_or_set(fixture_file) do
           object = YAML.load_file(fixture_file)
-          object = [] unless object.is_a?(Array)
+          unless object.is_a?(Array) || object.is_a?(Hash)
+            raise "Invalid fixture loaded from #{fixture_file}: #{object.class}"
+            object = []
+          end
           object
         end
       end
@@ -101,7 +109,12 @@ class DeviceDetector
       def pre_match_overall?
         overall_regex = REGEX_CACHE.get_or_set("overall-#{fixture_file}") do
           puts fixture_file
-          regexes.reduce('') do |res, regex|
+
+          # e.g. consoles.yml is a Hash
+          regex_list = regexes
+          regex_list = regex_list.values if regex_list.is_a?(Hash)
+
+          regex_list.reduce('') do |res, regex|
             if regex
               "#{res}|#{regex['regex']}"
             else

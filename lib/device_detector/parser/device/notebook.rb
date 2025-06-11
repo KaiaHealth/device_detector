@@ -7,9 +7,7 @@ class DeviceDetector
         include AbstractDeviceParser
 
         def parse
-          unless match_user_agent('FBMD/')
-            return nil
-          end
+          return nil unless match_user_agent('FBMD/')
 
           super
         end

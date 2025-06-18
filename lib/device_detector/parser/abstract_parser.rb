@@ -137,29 +137,32 @@ class DeviceDetector
           regex_list = regexes
           regex_list = regex_list.values if regex_list.is_a?(Hash)
 
-          regex_list.reduce('') do |res, regex|
+          full_regex = regex_list.reduce('') do |res, regex|
             if regex
               "#{res}|#{regex['regex']}"
             else
               res
             end
           end.delete_prefix('|')
+
+          build_regex_for_ua(full_regex)
         end
 
         match_user_agent(overall_regex)
       end
 
       def match_user_agent(regex)
-        src = regex.gsub('/', '\/')
-        regexp = Regexp.new("(?:^|[^A-Z0-9_-]|[^A-Z0-9-]_|sprd-|MZ-)(?:#{src})", Regexp::IGNORECASE)
+        regex = build_regex_for_ua(regex) if regex.is_a?(String)
 
-        # only match if useragent begins with given regex or there is no letter before it
-        match = @user_agent.match(regexp)
+        match = @user_agent.match(regex)
         return unless match
 
         match.captures || []
+      end
 
-        # result.size == 0 ? nil : result
+      def build_regex_for_ua(str)
+        str = str.gsub('/', '\/')
+        Regexp.new("(?:^|[^A-Z0-9_-]|[^A-Z0-9-]_|sprd-|MZ-)(?:#{str})", Regexp::IGNORECASE)
       end
     end
   end

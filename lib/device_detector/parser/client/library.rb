@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Client
-      class Library
-        include AbstractClientParser
-
+      class Library < AbstractClientParser
         protected
 
         def fixture_file

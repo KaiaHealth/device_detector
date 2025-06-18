@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class Notebook
-        include AbstractDeviceParser
-
+      class Notebook < AbstractDeviceParser
         def parse
           return nil unless match_user_agent('FBMD/')
 

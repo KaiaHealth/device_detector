@@ -2,8 +2,28 @@
 
 class DeviceDetector
   module Parser
-    class OperatingSystem
-      include AbstractParser
+    class OperatingSystem < AbstractParser
+      def self.desktop_os?(os_name)
+        os_family = os_family(os_name)
+
+        DESKTOP_OS.include?(os_family)
+      end
+
+      def self.os_family(os_label_or_short)
+        key = DOWNCASED_OPERATING_SYSTEMS[os_label_or_short.to_s.downcase] || os_label_or_short
+        return nil unless key
+
+        FAMILY_TO_OS[key]
+      end
+
+      def self.client_hint_mapping
+        OPERATING_SYSTEM_CLIENT_HINT_MAPPING
+      end
+
+      OPERATING_SYSTEM_CLIENT_HINT_MAPPING = {
+        'GNU/Linux' => ['Linux'],
+        'Mac' => ['MacOS']
+      }.freeze
 
       def parser_type
         :os
@@ -23,7 +43,7 @@ class DeviceDetector
           name = os_from_client_hints['name']
           version = os_from_client_hints['version']
 
-          if version.nil? && os_family(name) == os_family(os_from_ua['name'])
+          if empty?(version) && self.class.os_family(name) == self.class.os_family(os_from_ua['name'])
             version = os_from_ua['version']
           end
 
@@ -31,16 +51,14 @@ class DeviceDetector
             version = os_from_ua['version'] == '10' ? nil : os_from_ua['version']
           end
 
-          if os_family(os_from_ua['name']) && os_from_ua['name'] != name
+          if self.class.os_family(os_from_ua['name']) == name && os_from_ua['name'] != name
             name = os_from_ua['name']
-
             version = nil if %w[LeafOS HarmonyOS].include?(name)
-
             version = os_from_ua['version'] if name == 'PICO OS'
 
-            if name == 'Fire OS' && os_from_client_hints['version']
+            if name == 'Fire OS' && !empty?(os_from_client_hints['version'])
               major_version = version.split('.').first || 0
-              version = FIRE_OS_MAPPING[version] || FIRE_OS_MAPPING[major_version] || ''
+              version = FIRE_OS_VERSION_MAPPING[version] || FIRE_OS_VERSION_MAPPING[major_version] || ''
             end
           end
 
@@ -48,7 +66,7 @@ class DeviceDetector
 
           if name == 'GNU/Linux' && os_from_ua['name'] == 'Chrome OS' && os_from_client_hints['version'] == os_from_ua['version']
             name = os_from_ua['name']
-            short = os_from_ua['short']
+            short = os_from_ua['short_name']
           end
 
           if name == 'Android' && os_from_ua['name'] == 'Chrome OS'
@@ -70,7 +88,7 @@ class DeviceDetector
         end
 
         platform = parse_platform
-        family = os_family(short)
+        family = self.class.os_family(short)
 
         if @client_hints
           if name != 'Android' && ANDROID_APPS.include?(@client_hints.app)
@@ -95,7 +113,7 @@ class DeviceDetector
             name = 'Fire OS'
             family = 'Android'
             short = 'FIR'
-            version = FIRE_OS_MAPPING[version] || FIRE_OS_MAPPING[major_version] || ''
+            version = FIRE_OS_VERSION_MAPPING[version] || FIRE_OS_VERSION_MAPPING[major_version] || ''
           end
         end
 
@@ -130,6 +148,10 @@ class DeviceDetector
       ].freeze
 
       APPLE_OS_NAMES = %w[iPadOS tvOS watchOS iOS Mac].freeze
+
+      DESKTOP_OS = [
+        'AmigaOS', 'IBM', 'GNU/Linux', 'Mac', 'Unix', 'Windows', 'BeOS', 'Chrome OS', 'Chromium OS'
+      ].freeze
 
       OPERATING_SYSTEMS = {
         'AIX' => 'AIX',
@@ -372,6 +394,46 @@ class DeviceDetector
         oss.each { |os| h[os] = family }
       end.freeze
 
+      FIRE_OS_VERSION_MAPPING = {
+        '11' => '8',
+        '10' => '8',
+        '9' => '7',
+        '7' => '6',
+        '5' => '5',
+        '4.4.3' => '4.5.1',
+        '4.4.2' => '4',
+        '4.2.2' => '3',
+        '4.0.3' => '3',
+        '4.0.2' => '3',
+        '4' => '2',
+        '2' => '1'
+      }.freeze
+
+      LINEAGE_OS_VERSION_MAPPING = {
+        '15' => '22',
+        '14' => '21',
+        '13' => '20.0',
+        '12.1' => '19.1',
+        '12' => '19.0',
+        '11' => '18.0',
+        '10' => '17.0',
+        '9' => '16.0',
+        '8.1.0' => '15.1',
+        '8.0.0' => '15.0',
+        '7.1.2' => '14.1',
+        '7.1.1' => '14.1',
+        '7.0' => '14.0',
+        '6.0.1' => '13.0',
+        '6.0' => '13.0',
+        '5.1.1' => '12.1',
+        '5.0.2' => '12.0',
+        '5.0' => '12.0',
+        '4.4.4' => '11.0',
+        '4.3' => '10.2',
+        '4.2.2' => '10.1',
+        '4.0.4' => '9.1.0'
+      }.freeze
+
       # https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/OperatingSystem.php#L376
       def short_os_data(name)
         short = DOWNCASED_OPERATING_SYSTEMS.fetch(name.downcase, 'UNK')
@@ -416,12 +478,14 @@ class DeviceDetector
 
       # https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/OperatingSystem.php#L582
       def parse_os_from_client_hints
-        name = ''
-        short = ''
-        version = ''
+        name = nil
+        short = nil
+        version = nil
         hint_name = @client_hints&.operating_system
 
         if hint_name
+          hint_name = apply_client_hint_mapping(hint_name)
+
           OPERATING_SYSTEMS.each do |os_short, os_name|
             next unless fuzzy_compare(hint_name, os_name)
 
@@ -446,7 +510,7 @@ class DeviceDetector
             end
 
             # On Windows, version 0.0.0 can be either 7, 8 or 8.1, so we return 0.0.0
-            version = '' if name != 'Windows' && version != '0.0.0' && version.to_i.zero?
+            version = nil if name != 'Windows' && version != '0.0.0' && version.to_i.zero?
           end
         end
 
@@ -483,6 +547,7 @@ class DeviceDetector
             end
 
             version = build_version(regex['version'], matches) if regex.key?('version')
+            break
           end
         end
 
@@ -491,10 +556,6 @@ class DeviceDetector
           'short_name' => short,
           'version' => version
         }
-      end
-
-      def os_family(os_label)
-        FAMILY_TO_OS[os_label]
       end
     end
   end

@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Client
-      class MediaPlayer
-        include AbstractClientParser
-
+      class MediaPlayer < AbstractClientParser
         protected
 
         def fixture_file

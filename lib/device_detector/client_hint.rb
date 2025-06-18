@@ -60,7 +60,7 @@ class DeviceDetector
         when 'http-sec-ch-ua-bitness', 'sec-ch-ua-bitness', 'bitness'
           @bitness = clean_header_value(value)
         when 'http-sec-ch-ua-mobile', 'sec-ch-ua-mobile', 'mobile'
-          @mobile = clean_header_value(value).in?([true, 'true', '1', 1, '?1'])
+          @mobile = [true, 'true', '1', 1, '?1'].include?(clean_header_value(value))
         when 'http-sec-ch-ua-model', 'sec-ch-ua-model', 'model'
           @model = clean_header_value(value)
         when 'http-sec-ch-ua-full-version', 'sec-ch-ua-full-version', 'uafullversion'
@@ -82,22 +82,21 @@ class DeviceDetector
 
           parse_full_version_list(value)
         when 'http-x-requested-with', 'x-requested-with'
-          @app = value if value.downcase == 'xmlhttprequest'
+          @app = value if value.downcase != 'xmlhttprequest'
         when 'formfactors', 'http-sec-ch-ua-form-factors', 'sec-ch-ua-form-factors'
           if value.is_a?(Array)
             @form_factors = value.map(&:downcase)
           else
-            hits = value.scan(/"([a-z]+)"/i)
-            @form_factors = hits[1] unless hits.nil?
+            hits = value.downcase.scan(/"([a-z]+)"/i)
+            @form_factors = hits.flatten unless hits.nil?
           end
         end
       end
     end
 
     def clean_header_value(str)
-      str.delete_prefix!('"')
-      str.delete_suffix!('"')
-      str
+      str = str.delete_prefix('"')
+      str.delete_suffix('"')
     end
 
     def full_version_list=(value)
@@ -105,10 +104,12 @@ class DeviceDetector
     end
 
     def parse_full_version_list(value)
+      return if value.nil?
+
       list = []
       while hit = value.match(/^"([^"]+)"; ?v="([^"]+)"(?:, )?/)
         list << { 'brand' => hit[1], 'version' => hit[2] }
-        value.slice!(hit[0].size, -1)
+        value = value.slice(hit[0].size..)
       end
 
       @full_version_list = list if list.size.positive?

@@ -60,7 +60,7 @@ describe DeviceDetector do
       end
 
       it 'recognizes the device name' do
-        expect(client.device_name).must_be_nil
+        expect(client.device_name).to be nil
       end
 
       it 'recognizes the device type' do
@@ -78,7 +78,7 @@ describe DeviceDetector do
       end
 
       it 'recognizes the device name' do
-        expect(client.device_name).must_be_nil
+        expect(client.device_name).to be nil
       end
 
       it 'recognizes the device type' do

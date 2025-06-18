@@ -4,13 +4,13 @@ class DeviceDetector
   module Parser
     module Client
       module Hint
-        class BrowserHints < AbstractParser
+        class AppHints < AbstractParser
           def fixture_file
-            'regexes/client/hints/browsers.yml'
+            'regexes/client/hints/apps.yml'
           end
 
           def parser_name
-            'BrowserHints'
+            'AppHints'
           end
 
           def parse

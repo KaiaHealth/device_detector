@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class Mobile
-        include AbstractDeviceParser
-
+      class Mobile < AbstractDeviceParser
         protected
 
         def fixture_file

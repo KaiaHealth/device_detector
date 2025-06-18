@@ -2,9 +2,7 @@
 
 class DeviceDetector
   module Parser
-    class Bot
-      include AbstractParser
-
+    class Bot < AbstractParser
       def parser_type
         :bot
       end

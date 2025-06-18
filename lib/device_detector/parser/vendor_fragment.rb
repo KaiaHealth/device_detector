@@ -2,21 +2,17 @@
 
 class DeviceDetector
   module Parser
-    class VendorFragment
-      include AbstractParser
-
+    class VendorFragment < AbstractParser
       def initialize(uas)
         self.user_agent = uas
       end
 
       def parse
-        raise 'ooops' if regexes.empty?
-
         regexes.each do |brand, many_regexes|
           many_regexes.each do |regex|
             if match_user_agent(regex + '[^a-z0-9]+')
               @matched_regex = regex
-              return { 'brand' => brand }
+              return brand
             end
           end
         end

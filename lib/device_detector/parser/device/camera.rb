@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class Camera
-        include AbstractDeviceParser
-
+      class Camera < AbstractDeviceParser
         def parse
           return nil unless pre_match_overall?
 

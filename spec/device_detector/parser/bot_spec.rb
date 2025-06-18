@@ -3,6 +3,9 @@
 describe DeviceDetector::Parser::Bot do
   fixture_dir = File.expand_path('../../fixtures/detector', __dir__)
   fixture_files = Dir["#{fixture_dir}/bots.yml"]
+
+  raise 'invalid fixture load path specified' if fixture_files.empty?
+
   fixture_files.each do |fixture_file|
     describe File.basename(fixture_file) do
       fixtures = YAML.load_file(fixture_file)

@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Client
-      class Pim
-        include AbstractClientParser
-
+      class Pim < AbstractClientParser
         protected
 
         def fixture_file

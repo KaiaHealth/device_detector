@@ -2,11 +2,16 @@
 
 class DeviceDetector
   module Parser
-    module AbstractParser
-      @@overall_regex = nil
+    class AbstractParser
+      # overriden
+      def self.client_hint_mapping
+        {}
+      end
 
       REGEX_CACHE = ::DeviceDetector::MemoryCache.new({})
       private_constant :REGEX_CACHE
+
+      USER_AGENT_CLIENT_HINTS_FRAGMENT_REGEX = %r{Android (?:10[.\d]*; K(?: Build/|[;)])|1[1-5]\)) AppleWebKit}i
 
       def initialize
         @result = nil
@@ -17,25 +22,28 @@ class DeviceDetector
         @client_hints = hints
       end
 
-      def user_agent=(uas)
-        @user_agent = uas
-      end
-
-      def client_hints=(hints)
-        @client_hints = hints
-      end
+      attr_writer :user_agent, :client_hints
 
       protected
+
+      def empty?(var)
+        return true if var.nil?
+        return true if var.empty?
+
+        false
+      end
 
       def fuzzy_compare(val1, val2)
         val1.to_s.downcase.gsub(' ', '') == val2.to_s.downcase.gsub(' ', '')
       end
 
       def build_version(version_string, matches)
+        return unless version_string
+
         version_string = build_by_match(version_string, matches)
         version_string = version_string.gsub('_', '.')
 
-        version_string.chomp(' .')
+        version_string.strip.sub(/^(\.+)/, '').sub(/(\.+)$/, '')
       end
 
       def build_by_match(item, matches)
@@ -71,8 +79,24 @@ class DeviceDetector
         )
       end
 
+      def apply_client_hint_mapping(name)
+        downcased_name = name.downcase
+        mapped_result = nil
+
+        self.class.client_hint_mapping.detect do |mapped_name, client_hints|
+          client_hints.detect do |client_hint|
+            if downcased_name == client_hint.downcase
+              mapped_result = mapped_name
+              break mapped_name
+            end
+          end
+        end
+
+        mapped_result || name
+      end
+
       def user_agent_client_hints_fragment?
-        @user_agent.match?(%r{Android (?:10[.\d]*; K(?: Build/|[;)])|1[1-5]\)) AppleWebKit}i)
+        @user_agent.match?(USER_AGENT_CLIENT_HINTS_FRAGMENT_REGEX)
       end
 
       def desktop_fragment?
@@ -84,7 +108,7 @@ class DeviceDetector
           ].join('|')
 
         match_user_agent('(?:Windows (?:NT|IoT)|X11; Linux x86_64)') &&
-          match_user_agent(regex)
+          !match_user_agent(regex)
       end
 
       def fixture_file
@@ -97,19 +121,18 @@ class DeviceDetector
 
       def regexes
         REGEX_CACHE.get_or_set(fixture_file) do
-          object = YAML.load_file(fixture_file)
+          object = YAML.safe_load_file(fixture_file,
+                                       permitted_classes: [String, Integer, NilClass, Array, Hash])
           unless object.is_a?(Array) || object.is_a?(Hash)
             raise "Invalid fixture loaded from #{fixture_file}: #{object.class}"
-            object = []
           end
+
           object
         end
       end
 
       def pre_match_overall?
         overall_regex = REGEX_CACHE.get_or_set("overall-#{fixture_file}") do
-          puts fixture_file
-
           # e.g. consoles.yml is a Hash
           regex_list = regexes
           regex_list = regex_list.values if regex_list.is_a?(Hash)

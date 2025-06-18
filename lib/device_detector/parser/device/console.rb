@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class Console
-        include AbstractDeviceParser
-
+      class Console < AbstractDeviceParser
         def parse
           return nil unless pre_match_overall?
 

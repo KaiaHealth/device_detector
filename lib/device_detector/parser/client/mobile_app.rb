@@ -1,14 +1,35 @@
 # frozen_string_literal: true
 
+require 'device_detector/parser/client/hint/app_hints'
+
 class DeviceDetector
   module Parser
     module Client
-      class MobileApp
-        include AbstractClientParser
+      class MobileApp < AbstractClientParser
+        def use(uas, hints)
+          super
+          @app_hints = DeviceDetector::Parser::Client::Hint::AppHints.new
+          @app_hints.use(uas, hints)
+        end
 
         def parse
-          # TODO: https://github.com/matomo-org/device-detector/blob/master/Parser/Client/MobileApp.php#L104
-          super
+          result = super
+          name = result&.fetch('name') || ''
+          version = result&.fetch('version') || ''
+          app_hash = @app_hints.parse
+
+          if !app_hash.nil? && app_hash['name'] != name
+            name = app_hash['name']
+            version = ''
+          end
+
+          return nil if empty?(name)
+
+          {
+            'type' => parser_name,
+            'name' => name,
+            'version' => version
+          }
         end
 
         protected

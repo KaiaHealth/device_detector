@@ -64,6 +64,9 @@ desc 'update regex database from matomo project'
 task :update_regexes do
   top = File.expand_path(__dir__)
   get_latest_matomo_checkout
+  Dir.glob("#{top}/regexes/**/*.yml").each do |f|
+    File.unlink(f)
+  end
   system "cp -R #{MATOMO_CHECKOUT_LOCATION}/regexes/* #{top}/regexes"
 end
 
@@ -80,6 +83,10 @@ task :update_fixtures do
     { target_path: "#{top}/spec/fixtures/device",
       source_path: 'Tests/Parser/Device/fixtures/*.yml' }
   ]
+
+  Dir.glob("#{top}/spec/fixtures/**/*.yml").each do |f|
+    File.unlink(f)
+  end
 
   fixture_mappings.each do |mapping|
     source_path = mapping.fetch(:source_path)

@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class PortableMediaPlayer
-        include AbstractDeviceParser
-
+      class PortableMediaPlayer < AbstractDeviceParser
         def parse
           return nil unless pre_match_overall?
 

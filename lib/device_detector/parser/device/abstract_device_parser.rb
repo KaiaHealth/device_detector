@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      module AbstractDeviceParser
-        include AbstractParser
-
+      class AbstractDeviceParser < AbstractParser
         DEVICE_TYPES = [
           'desktop',
           'smartphone',
@@ -23,6 +21,16 @@ class DeviceDetector
           'peripheral'
         ].freeze
 
+        CLIENT_HINT_FORM_FACTORS_MAPPING = {
+          'automotive' => 'car browser',
+          'xr' => 'wearable',
+          'watch' => 'wearable',
+          'mobile' => 'smartphone',
+          'tablet' => 'tablet',
+          'desktop' => 'desktop',
+          'eink' => 'tablet'
+        }.freeze
+
         def parser_type
           :device
         end
@@ -30,13 +38,13 @@ class DeviceDetector
         # https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/Device/AbstractDeviceParser.php#L2255
         def parse
           result_client_hint = parse_client_hints
-          @device_model = result_client_hint&.fetch('model', '') || ''
+          device_model = result_client_hint&.fetch('model', '') || ''
 
           restore_user_agent_from_client_hints
 
-          return result if @device_model.empty? && user_agent_client_hints_fragment?
+          return result if device_model.empty? && user_agent_client_hints_fragment?
 
-          return result if @device_model.empty? && desktop_fragment?
+          return result if device_model.empty? && desktop_fragment?
 
           brand = ''
           regex, matches = regexes.detect do |r_brand, r|
@@ -47,7 +55,7 @@ class DeviceDetector
             end
           end
 
-          if matches.nil? || matches.empty?
+          if regex.nil?
             @device_type = result_client_hint&.fetch('device_type')
             return result_client_hint
           end
@@ -92,13 +100,12 @@ class DeviceDetector
 
         def parse_client_hints
           model = @client_hints&.model
-          if model
+          unless empty?(model)
             form_factors = @client_hints.form_factors
-            detected_device_type = form_factors.detect do |form_factor, device_type|
+            @device_type = CLIENT_HINT_FORM_FACTORS_MAPPING.detect do |form_factor, device_type|
               break device_type if form_factors.include?(form_factor)
             end
 
-            @device_type = detected_device_type
             @model = model
             @brand = ''
             return result
@@ -109,7 +116,7 @@ class DeviceDetector
 
         def result
           {
-            'deviceType' => @device_type,
+            'device_type' => @device_type,
             'model' => @model,
             'brand' => @brand
           }
@@ -117,7 +124,7 @@ class DeviceDetector
 
         def build_model(model, matches)
           model = build_by_match(model, matches)
-          model = model.gsub('_', '')
+          model = model.gsub('_', ' ')
           model = model.sub(/ TD$/i, '')
           return '' if model == 'Build' || model.empty?
 

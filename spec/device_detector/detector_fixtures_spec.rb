@@ -5,6 +5,9 @@ require_relative '../spec_helper'
 describe DeviceDetector do
   fixture_dir = File.expand_path('../fixtures/detector', __dir__)
   fixture_files = Dir["#{fixture_dir}/*.yml"]
+
+  raise 'invalid fixture load path specified' if fixture_files.empty?
+
   fixture_files.each do |fixture_file|
     describe File.basename(fixture_file) do
       fixtures = nil
@@ -31,10 +34,17 @@ describe DeviceDetector do
             DeviceDetector.new(user_agent, headers)
           end
 
-          it 'should be detected' do
-            if detector.bot?
+          if fixture_file.include?('bot.yml')
+            it 'should detect as bot' do
+              expect(detector.bot?).to eq true
               expect(detector.bot_name).to eq str_or_nil(f['bot']['name'])
-            else
+            end
+          end
+
+          unless fixture_file.include?('bot.yml')
+            it 'should be detected' do
+              next if detector.bot?
+
               expect(detector.name).to eq str_or_nil(f['client']['name']) if f['client']
 
               os_family = str_or_nil(f['os_family'])
@@ -59,6 +69,7 @@ describe DeviceDetector do
                   expect(detector.os_full_version).to eq os_version
                 end
               end
+
               if f['device']
                 expected_type = str_or_nil(f['device']['type'])
                 actual_type = detector.device_type

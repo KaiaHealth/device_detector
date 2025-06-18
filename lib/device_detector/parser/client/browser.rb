@@ -5,14 +5,34 @@ require 'device_detector/parser/client/hint/browser_hints'
 class DeviceDetector
   module Parser
     module Client
-      class Browser
-        include AbstractClientParser
-
+      class Browser < AbstractClientParser
         def use(uas, hints)
           super
           @browser_hints = DeviceDetector::Parser::Client::Hint::BrowserHints.new
           @browser_hints.use(uas, hints)
         end
+
+        def self.client_hint_mapping
+          BROWSER_CLIENT_HINT_MAPPING
+        end
+
+        def self.mobile_only_browser?(browser)
+          MOBILE_ONLY_BROWSERS.include?(browser) ||
+            MOBILE_ONLY_BROWSERS.include?(
+              DOWNCASED_AVAILABLE_BROWSERS[browser.downcase]
+            )
+        end
+
+        BROWSER_CLIENT_HINT_MAPPING = {
+          'Chrome' => ['Google Chrome'],
+          'Chrome Webview' => ['Android WebView'],
+          'DuckDuckGo Privacy Browser' => ['DuckDuckGo'],
+          'Edge WebView' => ['Microsoft Edge WebView2'],
+          'Mi Browser' => ['Miui Browser', 'XiaoMiBrowser'],
+          'Microsoft Edge' => ['Edge'],
+          'Norton Private Browser' => ['Norton Secure Browser'],
+          'Vewd Browser' => ['Vewd Core']
+        }.freeze
 
         AVAILABLE_BROWSERS = {
           'V1' => 'Via',
@@ -703,6 +723,33 @@ class DeviceDetector
           h[long.downcase] = short
         end.freeze
 
+        MOBILE_ONLY_BROWSERS = %w[
+          36 AH AI BL C1 C4 CB CW DB
+          3M DT EU EZ FK FM FR FX GH
+          GI GR HA HU IV JB KD M1 MF
+          MN MZ NX OC OI OM OZ 2P PI
+          PE QU RE S0 S7 SA SB SG SK
+          ST SU T1 UH UM UT VE VV WI
+          WP YN IO IS HQ RW HI PN BW
+          YO PK MR AP AK UI SD VN 4S
+          RF LR SQ BV L1 F0 KS V0 C8
+          AZ MM BT N0 P0 F3 DU D0 P1
+          O4 XO U0 B0 VA X0 A5 X1 18
+          B5 B6 TC A6 2X F4 YG WR NA
+          DM 1M A7 XN XT XB W1 HT B7
+          B9 T0 I8 O6 P7 O8 4B A8 P8
+          1W EV Z0 I9 V4 H4 M5 0S 0C
+          ZR D6 F6 P3 FT A9 X2 NI FG
+          TH N3 GD O9 Q3 F7 K2 N4 P5
+          H5 V3 G2 BG OL II TL M6 Y3
+          M7 GN JR IG HW 4O OU 5P KE
+          5A TT 6P G3 7P VU F8 L4 DK
+          DP KL K4 N6 KU WK M8 UP ZT
+          9P N8 VR N9 M9 F9 0P 0A 2F
+          2M K7 1N 8A H7 X3 X4 5O 6I
+          7I X5 3P
+        ].freeze
+
         def parse
           # TODO: https://github.com/matomo-org/device-detector/blob/master/Parser/Client/Browser.php#L971
           browser_from_client_hints = parse_browser_from_client_hints
@@ -733,7 +780,7 @@ class DeviceDetector
 
             if ['Chromium', 'Chrome Webview'].include?(name) \
               && browser_from_ua['name'] \
-              && %w[CR CV AN].include?(browser_from_ua['short_name'])
+              && !%w[CR CV AN].include?(browser_from_ua['short_name'])
 
               name = browser_from_ua['name']
               short = browser_from_ua['short_name']
@@ -794,7 +841,10 @@ class DeviceDetector
           brands = @client_hints&.brand_list
 
           if brands
-            brands.each do |brand, brand_version|
+            brands.each do |info_hash|
+              brand = info_hash['brand']
+              brand_version = info_hash['version']
+
               brand = apply_client_hint_mapping(brand).to_s
 
               AVAILABLE_BROWSERS.each do |browser_short, browser_name|
@@ -808,7 +858,7 @@ class DeviceDetector
                 break
               end
 
-              break if name != '' && name != 'Chromium' && name != 'Microsoft Edge'
+              break if !empty?(name) && name != 'Chromium' && name != 'Microsoft Edge'
             end
 
             version = @client_hints.brand_version if @client_hints.brand_version

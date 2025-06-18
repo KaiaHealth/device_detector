@@ -32,6 +32,7 @@ class DeviceDetector
   MAJOR_VERSION_2 = Gem::Version.new('2.0')
   MAJOR_VERSION_3 = Gem::Version.new('3.0')
   MAJOR_VERSION_4 = Gem::Version.new('4.0')
+  MAJOR_VERSION_8 = Gem::Version.new('8.0')
 
   attr_reader :client_hint, :user_agent
 
@@ -48,7 +49,6 @@ class DeviceDetector
     add_parser(Parser::Client::Browser.new)
     add_parser(Parser::Client::Library.new)
 
-    # TODO: add device parsers
     add_parser(Parser::Device::HbbTv.new)
     add_parser(Parser::Device::ShellTv.new)
     add_parser(Parser::Device::Notebook.new)
@@ -77,27 +77,27 @@ class DeviceDetector
   end
 
   def os_family
-    @os&.fetch('family', nil)
+    presence(@os&.fetch('family', nil))
   end
 
   def os_name
-    @os&.fetch('name', nil)
+    presence(@os&.fetch('name', nil))
   end
 
   def os_full_version
-    @os&.fetch('version', nil)
+    presence(@os&.fetch('version', nil))
   end
 
   def device_name
-    @model
+    presence(@model)
   end
 
   def device_brand
-    @brand
+    presence(@brand)
   end
 
   def device_type
-    @device
+    presence(@device)
   end
 
   def known?
@@ -197,8 +197,8 @@ class DeviceDetector
       next unless device
 
       @device = device['device_type']
-      @model = device['model']
-      @brand = device['brand']
+      @model = presence(device['model'])
+      @brand = presence(device['brand'])
       break
     end
 
@@ -206,7 +206,7 @@ class DeviceDetector
 
     unless @brand
       vendor_parser = DeviceDetector::Parser::VendorFragment.new(@user_agent)
-      @brand = vendor_parser.parse || nil
+      @brand = presence(vendor_parser.parse || nil)
     end
 
     if @brand == 'Apple' && !DeviceDetector::Parser::OperatingSystem::APPLE_OS_NAMES.include?(os_name)
@@ -215,7 +215,7 @@ class DeviceDetector
       @model = nil
     end
 
-    if @brand && DeviceDetector::Parser::OperatingSystem::APPLE_OS_NAMES.include?(os_name)
+    if !@brand && DeviceDetector::Parser::OperatingSystem::APPLE_OS_NAMES.include?(os_name)
       @brand = 'Apple'
     end
 
@@ -238,9 +238,9 @@ class DeviceDetector
       @device = 'tablet'
     end
 
-    @device = 'smartphone' unless @device.nil? && android_mobile_fragment?
+    @device = 'smartphone' if @device.nil? && android_mobile_fragment?
 
-    if @device.nil? && os_name == 'Android' && !os_full_version.empty?
+    if @device.nil? && os_name == 'Android' && presence(os_full_version)
       full_version = Gem::Version.new(os_full_version)
       if full_version < MAJOR_VERSION_2
         @device = 'smartphone'
@@ -259,7 +259,7 @@ class DeviceDetector
     if @device.nil? && touch_enabled? &&
        (os_name == 'Windows RT' ||
         (os_name == 'Windows' && os_full_version &&
-         Gem::Version.new(os_full_version) >= VersionExtractor::MAJOR_VERSION_8))
+         Gem::Version.new(os_full_version) >= MAJOR_VERSION_8))
       @device = 'tablet'
     end
 
@@ -286,9 +286,11 @@ class DeviceDetector
 
     @device = 'tv' if @device.nil? && match_user_agent('\(TV;')
 
-    @device = 'desktop' if @device != 'desktop' && !match_user_agent('Desktop') && desktop_fragment?
+    if @device != 'desktop' && @user_agent.to_s.include?('Desktop') && desktop_fragment?
+      @device = 'desktop'
+    end
 
-    return if @device.nil? && !desktop?
+    return if !@device.nil? || !desktop?
 
     @device = 'desktop'
   end
@@ -314,8 +316,8 @@ class DeviceDetector
     @client = nil
     @device = nil
     @os     = nil
-    @brand  = ''
-    @model  = ''
+    @brand  = nil
+    @model  = nil
     @parsed = false
   end
 
@@ -361,5 +363,17 @@ class DeviceDetector
 
   def uses_mobile_browser?
     @client&.fetch('type') == 'browser' && DeviceDetector::Parser::Client::Browser.mobile_only_browser?(name)
+  end
+
+  def touch_enabled?
+    match_user_agent('Touch')
+  end
+
+  def presence(var)
+    return nil if var.nil?
+    return nil if var.empty?
+    return nil if var == ''
+
+    var
   end
 end

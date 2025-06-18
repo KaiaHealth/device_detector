@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class HbbTv
-        include AbstractDeviceParser
-
+      class HbbTv < AbstractDeviceParser
         def parse
           return nil unless hbb_tv?
 

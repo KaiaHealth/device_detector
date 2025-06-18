@@ -3,9 +3,7 @@
 class DeviceDetector
   module Parser
     module Device
-      class ShellTv
-        include AbstractDeviceParser
-
+      class ShellTv < AbstractDeviceParser
         def parse
           return nil unless shell_tv?
 

@@ -5,9 +5,12 @@ require_relative '../spec_helper'
 describe DeviceDetector do
   fixture_dir = File.expand_path('../fixtures/device', __dir__)
   fixture_files = Dir["#{fixture_dir}/*.yml"]
+
+  raise 'invalid fixture load path specified' if fixture_files.empty?
+
   fixture_files.each do |fixture_file|
     describe File.basename(fixture_file) do
-      fixtures = YAML.load_file(fixture_file)
+      fixtures = YAML.safe_load_file(fixture_file)
       fixtures.each do |f|
         user_agent = f['user_agent']
         headers = f['headers']

@@ -120,21 +120,31 @@ class DeviceDetector
       end
 
       def regexes
+        REGEX_CACHE.get_or_set("regexes-#{fixture_file}") do
+          object = load_regexes
+
+          if object.is_a?(Array)
+            object.map { |e| prepare_definition_for_cache(e) }
+          elsif object.is_a?(Hash)
+            object = object.transform_values { |v| prepare_definition_for_cache(v) }
+          else
+            raise "Invalid fixture loaded from #{fixture_file}: #{object.class}"
+          end
+          object
+        end
+      end
+
+      def load_regexes
         REGEX_CACHE.get_or_set(fixture_file) do
           object = YAML.safe_load_file(fixture_file,
                                        permitted_classes: [String, Integer, NilClass, Array, Hash])
-          unless object.is_a?(Array) || object.is_a?(Hash)
-            raise "Invalid fixture loaded from #{fixture_file}: #{object.class}"
-          end
-
           object
         end
       end
 
       def pre_match_overall?
         overall_regex = REGEX_CACHE.get_or_set("overall-#{fixture_file}") do
-          # e.g. consoles.yml is a Hash
-          regex_list = regexes
+          regex_list = load_regexes
           regex_list = regex_list.values if regex_list.is_a?(Hash)
 
           full_regex = regex_list.reduce('') do |res, regex|
@@ -147,12 +157,17 @@ class DeviceDetector
 
           build_regex_for_ua(full_regex)
         end
-
-        match_user_agent(overall_regex)
+        match_user_agent_r(overall_regex)
       end
 
       def match_user_agent(regex)
         regex = build_regex_for_ua(regex) if regex.is_a?(String)
+
+        match_user_agent_r(regex)
+      end
+
+      def match_user_agent_r(regex)
+        raise 'called with string while expected Regex only' if regex.is_a?(String)
 
         match = @user_agent.match(regex)
         return unless match
@@ -163,6 +178,19 @@ class DeviceDetector
       def build_regex_for_ua(str)
         str = str.gsub('/', '\/')
         Regexp.new("(?:^|[^A-Z0-9_-]|[^A-Z0-9-]_|sprd-|MZ-)(?:#{str})", Regexp::IGNORECASE)
+      end
+
+      def prepare_definition_for_cache(definition)
+        return definition if parser_name == 'AppHints' # just a hash look up table
+        return definition if parser_name == 'BrowserHints' # just a hash look up table
+
+        # pre-parse Regex if needed
+        if definition.key?('regex')
+          regex = definition['regex']
+          definition['regex'] = build_regex_for_ua(regex)
+        end
+
+        definition
       end
     end
   end

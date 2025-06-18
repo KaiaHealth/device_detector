@@ -529,7 +529,7 @@ class DeviceDetector
         matches = nil
 
         os_regex = regexes.detect do |regex|
-          matches = match_user_agent(regex['regex'])
+          matches = match_user_agent_r(regex['regex'])
         end
 
         if matches

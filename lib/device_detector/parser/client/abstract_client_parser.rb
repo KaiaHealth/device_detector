@@ -17,7 +17,7 @@ class DeviceDetector
           return unless pre_match_overall?
 
           regexes.detect do |regex|
-            matches = match_user_agent(regex['regex'])
+            matches = match_user_agent_r(regex['regex'])
 
             next unless matches
 

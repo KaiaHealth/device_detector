@@ -48,7 +48,7 @@ class DeviceDetector
 
           brand = ''
           regex, matches = regexes.detect do |r_brand, r|
-            matches = match_user_agent(r['regex'])
+            matches = match_user_agent_r(r['regex'])
             if matches
               brand = r_brand
               break r, matches

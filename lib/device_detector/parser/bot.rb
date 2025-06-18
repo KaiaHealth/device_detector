@@ -11,7 +11,7 @@ class DeviceDetector
         return @result unless pre_match_overall?
 
         regexes.each do |regex|
-          if match_user_agent(regex['regex'])
+          if match_user_agent_r(regex['regex'])
             @result = regex
             break
           end

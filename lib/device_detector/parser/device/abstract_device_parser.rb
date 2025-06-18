@@ -75,7 +75,7 @@ class DeviceDetector
 
           if regex['models']
             model_regex, matches = regex['models'].detect do |model_regex|
-              matches = match_user_agent(model_regex['regex'])
+              matches = match_user_agent_r(model_regex['regex'])
               break model_regex, matches if matches
             end
 

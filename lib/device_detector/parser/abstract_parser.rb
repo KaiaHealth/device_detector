@@ -190,6 +190,14 @@ class DeviceDetector
           definition['regex'] = build_regex_for_ua(regex)
         end
 
+        if definition.key?('models')
+          models = definition['models']
+          definition['models'] = models.map do |r|
+            r['regex'] = build_regex_for_ua(r['regex'])
+            r
+          end
+        end
+
         definition
       end
     end

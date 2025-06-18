@@ -37,6 +37,10 @@ class DeviceDetector
 
         # https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/Device/AbstractDeviceParser.php#L2255
         def parse
+          @device_type = nil
+          @model = nil
+          @brand = nil
+
           result_client_hint = parse_client_hints
           device_model = result_client_hint&.fetch('model', '') || ''
 

@@ -36,10 +36,7 @@ class DeviceDetector
 
   attr_reader :client_hint, :user_agent
 
-  def initialize(user_agent, headers = nil)
-    self.user_agent = user_agent
-    self.headers = headers
-
+  def initialize(user_agent = nil, headers = nil)
     @parsers = {}
 
     add_parser(Parser::Client::FeedReader.new)
@@ -60,8 +57,7 @@ class DeviceDetector
 
     add_parser(Parser::Bot.new)
 
-    reset
-    parse
+    use(user_agent, headers)
   end
 
   def name
@@ -110,6 +106,14 @@ class DeviceDetector
 
   def bot_name
     @bot&.fetch('name', nil)
+  end
+
+  def use(user_agent, headers = nil)
+    reset
+    self.user_agent = user_agent
+    self.headers = headers
+    parse
+    self
   end
 
   class << self
@@ -298,8 +302,6 @@ class DeviceDetector
   # Sets the useragent to be parsed
   # https://github.com/matomo-org/device-detector/blob/6.4.5/DeviceDetector.php#L245
   def user_agent=(user_agent)
-    reset if @user_agent != user_agent
-
     @user_agent = user_agent || ''
   end
 

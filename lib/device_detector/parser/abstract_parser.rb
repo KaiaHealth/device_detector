@@ -13,10 +13,6 @@ class DeviceDetector
 
       USER_AGENT_CLIENT_HINTS_FRAGMENT_REGEX = %r{Android (?:10[.\d]*; K(?: Build/|[;)])|1[1-5]\)) AppleWebKit}i
 
-      def initialize
-        @result = nil
-      end
-
       def use(uas, hints)
         @user_agent = uas
         @client_hints = hints

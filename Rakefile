@@ -49,7 +49,7 @@ task :detectable_names do
 end
 
 MATOMO_REPO_URL = 'https://github.com/matomo-org/device-detector'
-MATOMO_REPO_TAG = '6.4.5'
+MATOMO_REPO_TAG = '6.4.6'
 MATOMO_CHECKOUT_LOCATION = '/tmp/matomo_device_detector'
 
 def get_latest_matomo_checkout

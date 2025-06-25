@@ -8629,3 +8629,71 @@
     name: VORTEX
     category: Crawler
     url: https://marty.anstey.ca/robots/vortex
+-
+  user_agent: xtate/2.12.4
+  bot:
+    name: xtate
+    category: Crawler
+    url: https://github.com/babycoff/xtate
+-
+  user_agent: Mozilla/5.0 xtate/2.12.4
+  bot:
+    name: xtate
+    category: Crawler
+    url: https://github.com/babycoff/xtate
+-
+  user_agent: FediList Agent/3 (https://fediverse.one/)
+  bot:
+    name: FediList
+    category: Social Media Agent
+    url: https://fedilist.com/
+-
+  user_agent: FediList Agent/3 (https://fedilist.com/)
+  bot:
+    name: FediList
+    category: Social Media Agent
+    url: https://fedilist.com/
+-
+  user_agent: Grafana/11.1.0
+  bot:
+    name: Grafana
+    category: Site Monitor
+    url: https://github.com/grafana/grafana
+    producer:
+      name: Grafana Labs
+      url: https://grafana.com/
+-
+  user_agent: github-camo (d76dea84)
+  bot:
+    name: Github Camo
+    category: Crawler
+    url: https://github.com/atmos/camo
+    producer:
+      name: Github
+      url: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/about-anonymized-urls
+- 
+  user_agent: Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Bluesky Cardyb/1.1; +mailto:support@bsky.app) Chrome/W.X.Y.Z Safari/537.36
+  bot:
+    name: Bluesky
+    category: Social Media Agent
+    url: https://bsky.app
+    producer:
+      name: Bluesky Social PBC
+      url: https://bsky.app
+-
+  user_agent: Mozilla/5.0 (compatible; OpenGraph.io/1.1; +https://opengraph.io/;) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36
+  bot:
+    name: OpenGraph.io
+    category: Crawler
+    url: https://www.opengraph.io
+    producer:
+      name: OpenGraph.io
+      url: https://www.opengraph.io
+-
+  user_agent: Mozilla/5.0 OnlyScans
+  bot:
+    name: Generic Bot
+-
+  user_agent: Mozilla/5.0; Keydrop.io/1.0(onlyscans.com/about);
+  bot:
+    name: Generic Bot

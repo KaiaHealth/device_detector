@@ -2,8 +2,8 @@
 
 require_relative '../spec_helper'
 
-describe DeviceDetector::Device do
-  subject { DeviceDetector::Device.new(user_agent) }
+describe DeviceDetector do
+  subject { DeviceDetector.new(user_agent) }
 
   alias_method :device, :subject
 
@@ -14,7 +14,7 @@ describe DeviceDetector::Device do
       end
 
       it 'finds an Apple iPhone 6' do
-        value(device.name).must_equal 'iPhone 6'
+        expect(device.device_name).to eq 'iPhone 6'
       end
     end
 
@@ -22,7 +22,7 @@ describe DeviceDetector::Device do
       let(:user_agent) { 'AIRNESS-AIR99/REV 2.2.1/Teleca Q03B1' }
 
       it 'finds an Airness AIR99' do
-        value(device.name).must_equal 'AIR99'
+        expect(device.device_name).to eq 'AIR99'
       end
     end
 
@@ -30,7 +30,7 @@ describe DeviceDetector::Device do
       let(:user_agent) { 'UNKNOWN MODEL NAME' }
 
       it 'returns nil' do
-        value(device.name).must_be_nil
+        expect(device.device_name).to be_nil
       end
     end
   end
@@ -42,7 +42,7 @@ describe DeviceDetector::Device do
       end
 
       it 'finds device of Apple iPhone 6' do
-        value(device.type).must_equal 'smartphone'
+        expect(device.device_type).to eq 'smartphone'
       end
     end
 
@@ -50,7 +50,7 @@ describe DeviceDetector::Device do
       let(:user_agent) { 'AIRNESS-AIR99/REV 2.2.1/Teleca Q03B1' }
 
       it 'finds the device of Airness AIR99' do
-        value(device.type).must_equal 'feature phone'
+        expect(device.device_type).to eq 'feature phone'
       end
     end
 
@@ -58,7 +58,7 @@ describe DeviceDetector::Device do
       let(:user_agent) { 'UNKNOWN MODEL TYPE' }
 
       it 'returns nil' do
-        value(device.type).must_be_nil
+        expect(device.device_type).to be_nil
       end
     end
 
@@ -68,7 +68,7 @@ describe DeviceDetector::Device do
       end
 
       it 'falls back to top-level device' do
-        value(device.type).must_equal 'smartphone'
+        expect(device.device_type).to eq 'smartphone'
       end
     end
   end
@@ -80,9 +80,9 @@ describe DeviceDetector::Device do
       end
 
       it 'identifies the device' do
-        value(device.name).must_equal 'Galaxy S5'
-        value(device.type).must_equal 'smartphone'
-        value(device.brand).must_equal 'Samsung'
+        expect(device.device_name).to eq 'Galaxy S5'
+        expect(device.device_type).to eq 'smartphone'
+        expect(device.device_brand).to eq 'Samsung'
       end
     end
 
@@ -92,9 +92,9 @@ describe DeviceDetector::Device do
       end
 
       it 'identifies the device' do
-        value(device.name).must_equal 'Galaxy Camera'
-        value(device.type).must_equal 'camera'
-        value(device.brand).must_equal 'Samsung'
+        expect(device.device_name).to eq 'Galaxy Camera'
+        expect(device.device_type).to eq 'camera'
+        expect(device.device_brand).to eq 'Samsung'
       end
     end
 
@@ -104,9 +104,9 @@ describe DeviceDetector::Device do
       end
 
       it 'identifies the device' do
-        value(device.name).must_equal 'Model S'
-        value(device.type).must_equal 'car browser'
-        value(device.brand).must_equal 'Tesla'
+        expect(device.device_name).to eq 'Model S'
+        expect(device.device_type).to eq 'car browser'
+        expect(device.device_brand).to eq 'Tesla'
       end
     end
 
@@ -114,9 +114,9 @@ describe DeviceDetector::Device do
       let(:user_agent) { 'Opera/9.30 (Nintendo Wii; U; ; 2047-7;en)' }
 
       it 'identifies the device' do
-        value(device.name).must_equal 'Wii'
-        value(device.type).must_equal 'console'
-        value(device.brand).must_equal 'Nintendo'
+        expect(device.device_name).to eq 'Wii'
+        expect(device.device_type).to eq 'console'
+        expect(device.device_brand).to eq 'Nintendo'
       end
     end
 
@@ -126,9 +126,9 @@ describe DeviceDetector::Device do
       end
 
       it 'identifies the device' do
-        value(device.name).must_equal 'iPod Touch'
-        value(device.type).must_equal 'portable media player'
-        value(device.brand).must_equal 'Apple'
+        expect(device.device_name).to eq 'iPod Touch'
+        expect(device.device_type).to eq 'portable media player'
+        expect(device.device_brand).to eq 'Apple'
       end
     end
 
@@ -138,9 +138,9 @@ describe DeviceDetector::Device do
       end
 
       it 'identifies the device' do
-        value(device.name).must_equal 'NetCast 4.0'
-        value(device.type).must_equal 'tv'
-        value(device.brand).must_equal 'LG'
+        expect(device.device_name).to eq 'NetCast 4.0'
+        expect(device.device_type).to eq 'tv'
+        expect(device.device_brand).to eq 'LG'
       end
     end
   end

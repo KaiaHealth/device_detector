@@ -8,7 +8,7 @@ describe DeviceDetector do
 
   raise 'invalid fixture load path specified' if fixture_files.empty?
 
-  detector = DeviceDetector.new
+  let(:detector) { DeviceDetector.new }
 
   fixture_files.each do |fixture_file|
     describe File.basename(fixture_file) do
@@ -17,13 +17,6 @@ describe DeviceDetector do
         fixtures = YAML.load_file(fixture_file)
       rescue Psych::SyntaxError => e
         raise "Failed to parse #{fixture_file}, reason: #{e}"
-      end
-
-      def str_or_nil(string)
-        return nil if string.nil?
-        return nil if string == ''
-
-        string.to_s
       end
 
       fixtures.each do |f|

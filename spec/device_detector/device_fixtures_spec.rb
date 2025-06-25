@@ -21,20 +21,19 @@ describe DeviceDetector do
           end
 
           it 'should be known' do
-            assert device.known?, "isn't known as a device"
+            expect(device).to be_known
           end
 
           it 'should have the expected model' do
-            assert_equal f['device']['model'], device.name, 'failed model detection'
+            expect(device.device_name).to eq(str_or_nil(f['device']['model']))
           end
 
           it 'should have the expected brand' do
-            assert_equal f['device']['brand'], device.brand, 'failed brand detection'
+            expect(device.device_brand).to eq(f['device']['brand'])
           end
 
           it 'should have the expected type' do
-            expected_device_type = DeviceDetector::Device::DEVICE_NAMES[f['device']['type']]
-            assert_equal expected_device_type, device.type, 'failed device name detection'
+            expect(device.device_type).to eq(f['device']['type'])
           end
         end
       end

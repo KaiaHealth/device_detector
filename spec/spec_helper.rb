@@ -20,6 +20,13 @@ require 'device_detector'
 
 require 'byebug'
 
+def str_or_nil(string)
+  return nil if string.nil?
+  return nil if string == ''
+
+  string.to_s
+end
+
 RSpec.configure do |config|
   config.example_status_persistence_file_path = 'rspec-status.file'
 

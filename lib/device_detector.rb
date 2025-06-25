@@ -279,7 +279,7 @@ class DeviceDetector
 
     @device = 'tv' if os_name == 'Coolita OS'
 
-    if !%w[tv periphereal].include?(@device) &&
+    if !%w[tv peripheral].include?(@device) &&
        match_user_agent('Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA| TV$')
       @device = 'tv'
     end
@@ -305,13 +305,19 @@ class DeviceDetector
   # https://github.com/matomo-org/device-detector/blob/6.4.5/DeviceDetector.php#L245
   def user_agent=(user_agent)
     @user_agent = user_agent || ''
+
+    return if @user_agent.encoding.name == 'UTF-8'
+
+    @user_agent = @user_agent.encode('utf-8', 'binary', undef: :replace, replace: '')
   end
 
   def headers=(headers)
     @headers = headers
-    @headers ||= {}
 
-    @client_hints = ClientHint.new(@headers)
+    @client_hints = nil
+    @client_hints = ClientHint.new(@headers) if @headers && !@headers.empty?
+
+    @headers
   end
 
   # Resets all detected data

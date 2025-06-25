@@ -60,7 +60,7 @@ class DeviceDetector
         # Restore Android User Agent
         # https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/AbstractParser.php#L144
         if user_agent_client_hints_fragment?
-          os_version = @client_hints.operating_system_version
+          os_version = @client_hints.operating_system_version || ''
           self.user_agent = @user_agent.sub(
             /(Android (?:10[.\d]*; K|1[1-5]))/,
             "Android #{os_version == '' ? 10 : os_version}; #{device_model}"
@@ -163,7 +163,15 @@ class DeviceDetector
       end
 
       def match_user_agent_r(regex)
-        match = @user_agent.match(regex)
+        match = begin
+          @user_agent.match(regex)
+        rescue RegexpError
+          ua = @user_agent.encode(
+            ::Encoding::ASCII, invalid: :replace, undef: :replace, replace: ''
+          )
+          ua.match(regex)
+        end
+
         return unless match
 
         match.captures || []

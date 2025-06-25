@@ -39,6 +39,8 @@ class DeviceDetector
   def initialize(user_agent = nil, headers = nil)
     @parsers = {}
 
+    @vendor_fragment_parser = DeviceDetector::Parser::VendorFragment.new
+
     add_parser(Parser::Client::FeedReader.new)
     add_parser(Parser::Client::MobileApp.new)
     add_parser(Parser::Client::MediaPlayer.new)
@@ -209,8 +211,8 @@ class DeviceDetector
     @model = @client_hints.model if !@model && @client_hints
 
     unless @brand
-      vendor_parser = DeviceDetector::Parser::VendorFragment.new(@user_agent)
-      @brand = presence(vendor_parser.parse || nil)
+      @vendor_fragment_parser.use(@user_agent)
+      @brand = presence(@vendor_fragment_parser.parse || nil)
     end
 
     if @brand == 'Apple' && !DeviceDetector::Parser::OperatingSystem::APPLE_OS_NAMES.include?(os_name)

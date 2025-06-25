@@ -526,10 +526,12 @@ class DeviceDetector
         name = ''
         version = ''
         short = ''
-        matches = nil
 
-        os_regex = regexes.detect do |regex|
-          matches = match_user_agent_r(regex['regex'])
+        os_regex, matches = regex_from_user_agent_cache do
+          regexes.detect do |regex|
+            match = match_user_agent_r(regex['regex'])
+            match ? break [regex, match] : nil
+          end
         end
 
         if matches

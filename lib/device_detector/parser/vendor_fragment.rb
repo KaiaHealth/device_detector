@@ -3,23 +3,22 @@
 class DeviceDetector
   module Parser
     class VendorFragment < AbstractParser
-      def initialize(uas)
+      def use(uas)
         self.user_agent = uas
       end
 
       def parse
-        regexes.each do |brand, many_regexes|
-          many_regexes.each do |regex|
-            # perf: the additional suffex needed here will be added in
-            # prepare_definition_for_cache already
-            if match_user_agent_r(regex)
-              @matched_regex = regex
-              return brand
+        regex_from_user_agent_cache do
+          brand, = regexes.detect do |brand, many_regexes|
+            many_regexes.detect do |regex|
+              # perf: the additional suffex needed here will be added in
+              # prepare_definition_for_cache already
+              break brand if match_user_agent_r(regex)
             end
           end
-        end
 
-        nil
+          brand
+        end
       end
 
       protected

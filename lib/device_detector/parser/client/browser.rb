@@ -873,9 +873,11 @@ class DeviceDetector
 
         # https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/Client/Browser.php#L1183
         def parse_browser_from_user_agent
-          regex, matches = regexes.detect do |regex|
-            match = match_user_agent_r(regex['regex'])
-            match ? break [regex, match] : nil
+          regex, matches = regex_from_user_agent_cache do
+            regexes.detect do |regex|
+              match = match_user_agent_r(regex['regex'])
+              match ? break [regex, match] : nil
+            end
           end
 
           if regex.nil?

@@ -50,12 +50,10 @@ class DeviceDetector
 
           return result if device_model.empty? && desktop_fragment?
 
-          brand = ''
-          regex, matches = regexes.detect do |r_brand, r|
-            matches = match_user_agent_r(r['regex'])
-            if matches
-              brand = r_brand
-              break r, matches
+          regex, matches, brand = regex_from_user_agent_cache do
+            regexes.detect do |r_brand, r|
+              match = match_user_agent_r(r['regex'])
+              break [r, match, r_brand] if match
             end
           end
 
@@ -78,9 +76,11 @@ class DeviceDetector
           @model = build_model(regex['model'], matches) if regex['model']
 
           if regex['models']
-            model_regex, matches = regex['models'].detect do |model_regex|
-              matches = match_user_agent_r(model_regex['regex'])
-              break model_regex, matches if matches
+            model_regex, matches = regex_from_user_agent_cache('models') do
+              regex['models'].detect do |model_regex|
+                match = match_user_agent_r(model_regex['regex'])
+                break [model_regex, match] if match
+              end
             end
 
             return result unless model_regex

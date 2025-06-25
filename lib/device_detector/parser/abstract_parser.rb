@@ -163,8 +163,6 @@ class DeviceDetector
       end
 
       def match_user_agent_r(regex)
-        raise 'called with string while expected Regex only' if regex.is_a?(String)
-
         match = @user_agent.match(regex)
         return unless match
 
@@ -195,6 +193,11 @@ class DeviceDetector
         end
 
         definition
+      end
+
+      def regex_from_user_agent_cache(key = nil, &block)
+        key = "#{parser_name}_#{@user_agent}#{key}"
+        DeviceDetector.cache.get_or_set(key, &block)
       end
     end
   end

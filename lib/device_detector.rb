@@ -277,10 +277,13 @@ class DeviceDetector
 
     @device = 'tv' if match_user_agent('Opera TV Store| OMI/')
 
-    @device = 'tv' if os_name == 'Coolita OS'
+    if os_name == 'Coolita OS'
+      @device = 'tv'
+      @brand = 'coocaa'
+    end
 
     if !%w[tv peripheral].include?(@device) &&
-       match_user_agent('Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA| TV$')
+       match_user_agent('Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA|Firebolt| TV$')
       @device = 'tv'
     end
 
@@ -316,8 +319,6 @@ class DeviceDetector
 
     @client_hints = nil
     @client_hints = ClientHint.new(@headers) if @headers && !@headers.empty?
-
-    @headers
   end
 
   # Resets all detected data

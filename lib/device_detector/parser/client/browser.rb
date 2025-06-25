@@ -483,6 +483,7 @@ class DeviceDetector
           'PP' => 'Oppo Browser',
           'P6' => 'Opus Browser',
           'PR' => 'Palm Pre',
+          '2E' => 'Pocket Internet Explorer',
           '7I' => 'Puffin Cloud Browser',
           '6I' => 'Puffin Incognito Browser',
           'PU' => 'Puffin Secure Browser',
@@ -747,7 +748,7 @@ class DeviceDetector
           DP KL K4 N6 KU WK M8 UP ZT
           9P N8 VR N9 M9 F9 0P 0A 2F
           2M K7 1N 8A H7 X3 X4 5O 6I
-          7I X5 3P
+          7I X5 3P 2E
         ].freeze
 
         def parse

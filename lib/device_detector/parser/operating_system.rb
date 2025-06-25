@@ -150,7 +150,7 @@ class DeviceDetector
       APPLE_OS_NAMES = %w[iPadOS tvOS watchOS iOS Mac].freeze
 
       DESKTOP_OS = [
-        'AmigaOS', 'IBM', 'GNU/Linux', 'Mac', 'Unix', 'Windows', 'BeOS', 'Chrome OS', 'Chromium OS'
+        'AmigaOS', 'IBM', 'GNU/Linux', 'Mac', 'Unix', 'Windows', 'BeOS', 'Chrome OS'
       ].freeze
 
       OPERATING_SYSTEMS = {

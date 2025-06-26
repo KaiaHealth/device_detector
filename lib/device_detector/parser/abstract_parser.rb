@@ -122,19 +122,17 @@ class DeviceDetector
           if object.is_a?(Array)
             object.map { |e| prepare_definition_for_cache(e) }
           elsif object.is_a?(Hash)
-            object = object.transform_values { |v| prepare_definition_for_cache(v) }
+            object.transform_values { |v| prepare_definition_for_cache(v) }
           else
             raise "Invalid fixture loaded from #{fixture_file}: #{object.class}"
           end
-          object
         end
       end
 
       def load_regexes
         REGEX_CACHE.get_or_set(fixture_file) do
-          object = YAML.safe_load_file(fixture_file,
-                                       permitted_classes: [String, Integer, NilClass, Array, Hash])
-          object
+          YAML.safe_load_file(fixture_file,
+                              permitted_classes: [String, Integer, NilClass, Array, Hash])
         end
       end
 
@@ -183,19 +181,21 @@ class DeviceDetector
       end
 
       def prepare_definition_for_cache(definition)
+        definition = deep_symbolize_keys(definition)
+
         return definition if parser_name == 'AppHints' # just a hash look up table
         return definition if parser_name == 'BrowserHints' # just a hash look up table
 
         # pre-parse Regex if needed
-        if definition.key?('regex')
-          regex = definition['regex']
-          definition['regex'] = build_regex_for_ua(regex)
+        if definition.key?(:regex)
+          regex = definition[:regex]
+          definition[:regex] = build_regex_for_ua(regex)
         end
 
-        if definition.key?('models')
-          models = definition['models']
-          definition['models'] = models.map do |r|
-            r['regex'] = build_regex_for_ua(r['regex'])
+        if definition.key?(:models)
+          models = definition[:models]
+          definition[:models] = models.map do |r|
+            r[:regex] = build_regex_for_ua(r[:regex])
             r
           end
         end
@@ -206,6 +206,20 @@ class DeviceDetector
       def regex_from_user_agent_cache(key = nil, &block)
         key = "#{parser_name}_#{@user_agent}#{key}"
         DeviceDetector.cache.get_or_set(key, &block)
+      end
+
+      def deep_symbolize_keys(obj)
+        case obj
+        when Hash
+          obj.each_with_object({}) do |(key, value), result|
+            new_key = key.respond_to?(:to_sym) ? key.to_sym : key
+            result[new_key] = deep_symbolize_keys(value)
+          end
+        when Array
+          obj.map { |item| deep_symbolize_keys(item) }
+        else
+          obj
+        end
       end
     end
   end

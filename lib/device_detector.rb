@@ -65,25 +65,25 @@ class DeviceDetector
   def name
     return unless @client
 
-    @client['name']
+    @client[:name]
   end
 
   def full_version
     return unless @client
 
-    @client['version']
+    @client[:version]
   end
 
   def os_family
-    presence(@os&.fetch('family', nil))
+    presence(@os&.fetch(:family, nil))
   end
 
   def os_name
-    presence(@os&.fetch('name', nil))
+    presence(@os&.fetch(:name, nil))
   end
 
   def os_full_version
-    presence(@os&.fetch('version', nil))
+    presence(@os&.fetch(:version, nil))
   end
 
   def device_name
@@ -107,7 +107,7 @@ class DeviceDetector
   end
 
   def bot_name
-    @bot&.fetch('name', nil)
+    @bot&.fetch(:name, nil)
   end
 
   def use(user_agent, headers = nil)
@@ -202,9 +202,9 @@ class DeviceDetector
 
       next unless device
 
-      @device = device['device_type']
-      @model = presence(device['model'])
-      @brand = presence(device['brand'])
+      @device = device[:device_type]
+      @model = presence(device[:model])
+      @brand = presence(device[:brand])
       break
     end
 
@@ -373,7 +373,7 @@ class DeviceDetector
   end
 
   def uses_mobile_browser?
-    @client&.fetch('type') == 'browser' && DeviceDetector::Parser::Client::Browser.mobile_only_browser?(name)
+    @client&.fetch(:type) == 'browser' && DeviceDetector::Parser::Client::Browser.mobile_only_browser?(name)
   end
 
   def touch_enabled?

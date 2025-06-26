@@ -42,7 +42,7 @@ class DeviceDetector
           @brand = nil
 
           result_client_hint = parse_client_hints
-          device_model = result_client_hint&.fetch('model', '') || ''
+          device_model = result_client_hint&.fetch(:model, '') || ''
 
           restore_user_agent_from_client_hints
 
@@ -52,13 +52,13 @@ class DeviceDetector
 
           regex, matches, brand = regex_from_user_agent_cache do
             regexes.detect do |r_brand, r|
-              match = match_user_agent_r(r['regex'])
+              match = match_user_agent_r(r[:regex])
               break [r, match, r_brand] if match
             end
           end
 
           if regex.nil?
-            @device_type = result_client_hint&.fetch('device_type')
+            @device_type = result_client_hint&.fetch(:device_type)
             return result_client_hint
           end
 
@@ -68,32 +68,30 @@ class DeviceDetector
             @brand = brand
           end
 
-          if regex['device'] && DEVICE_TYPES.include?(regex['device'])
-            @device_type = regex['device']
-          end
+          @device_type = regex[:device] if regex[:device] && DEVICE_TYPES.include?(regex[:device])
 
           @model = ''
-          @model = build_model(regex['model'], matches) if regex['model']
+          @model = build_model(regex[:model], matches) if regex[:model]
 
-          if regex['models']
+          if regex[:models]
             model_regex, matches = regex_from_user_agent_cache('models') do
-              regex['models'].detect do |model_regex|
-                match = match_user_agent_r(model_regex['regex'])
+              regex[:models].detect do |model_regex|
+                match = match_user_agent_r(model_regex[:regex])
                 break [model_regex, match] if match
               end
             end
 
             return result unless model_regex
 
-            @model = build_model(model_regex['model'], matches)
+            @model = build_model(model_regex[:model], matches)
 
-            if model_regex['brand'] && (
-              DEVICE_BRANDS.key?(model_regex['brand']) ||
-              DEVICE_BRANDS.value?(model_regex['brand']))
-              @brand = model_regex['brand']
+            if model_regex[:brand] && (
+              DEVICE_BRANDS.key?(model_regex[:brand]) ||
+              DEVICE_BRANDS.value?(model_regex[:brand]))
+              @brand = model_regex[:brand]
             end
-            if model_regex['device'] && DEVICE_TYPES.include?(model_regex['device'])
-              @device_type = model_regex['device']
+            if model_regex[:device] && DEVICE_TYPES.include?(model_regex[:device])
+              @device_type = model_regex[:device]
             end
           end
 
@@ -120,9 +118,9 @@ class DeviceDetector
 
         def result
           {
-            'device_type' => @device_type,
-            'model' => @model,
-            'brand' => @brand
+            device_type: @device_type,
+            model: @model,
+            brand: @brand
           }
         end
 

@@ -100,7 +100,14 @@ class DeviceDetector
     end
 
     def full_version_list=(value)
-      @full_version_list = value.is_a?(Array) ? value : @full_version_list
+      @full_version_list = if value.is_a?(Array)
+                             str = value.map do |h|
+                               "\"#{h['brand']}\"; v=\"#{h['version']}\""
+                             end.join(', ')
+                             parse_full_version_list(str)
+                           else
+                             @full_version_list
+                           end
     end
 
     def parse_full_version_list(value)
@@ -108,7 +115,7 @@ class DeviceDetector
 
       list = []
       while hit = value.match(/^"([^"]+)"; ?v="([^"]+)"(?:, )?/)
-        list << { 'brand' => hit[1], 'version' => hit[2] }
+        list << { brand: hit[1], version: hit[2] }
         value = value.slice(hit[0].size..)
       end
 

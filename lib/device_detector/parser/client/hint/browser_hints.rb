@@ -24,7 +24,7 @@ class DeviceDetector
 
             return nil if name == ''
 
-            { 'name' => name }
+            { name: name }
           end
         end
       end

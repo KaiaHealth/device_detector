@@ -18,7 +18,7 @@ class DeviceDetector
 
           regex, matches = regex_from_user_agent_cache do
             regexes.detect do |regex|
-              match = match_user_agent_r(regex['regex'])
+              match = match_user_agent_r(regex[:regex])
               match ? break [regex, match] : nil
             end
           end
@@ -26,9 +26,9 @@ class DeviceDetector
           return nil unless regex
 
           {
-            'type' => parser_name,
-            'name' => build_by_match(regex['name'], matches),
-            'version' => build_version(regex['version'].to_s, matches)
+            type: parser_name,
+            name: build_by_match(regex[:name], matches),
+            version: build_version(regex[:version].to_s, matches)
           }
         end
       end

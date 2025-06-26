@@ -39,50 +39,50 @@ class DeviceDetector
         os_from_client_hints = parse_os_from_client_hints
         os_from_ua = parse_os_from_user_agent
 
-        if os_from_client_hints['name']
-          name = os_from_client_hints['name']
-          version = os_from_client_hints['version']
+        if os_from_client_hints[:name]
+          name = os_from_client_hints[:name]
+          version = os_from_client_hints[:version]
 
-          if empty?(version) && self.class.os_family(name) == self.class.os_family(os_from_ua['name'])
-            version = os_from_ua['version']
+          if empty?(version) && self.class.os_family(name) == self.class.os_family(os_from_ua[:name])
+            version = os_from_ua[:version]
           end
 
           if name == 'Windows' && version == '0.0.0'
-            version = os_from_ua['version'] == '10' ? nil : os_from_ua['version']
+            version = os_from_ua[:version] == '10' ? nil : os_from_ua[:version]
           end
 
-          if self.class.os_family(os_from_ua['name']) == name && os_from_ua['name'] != name
-            name = os_from_ua['name']
+          if self.class.os_family(os_from_ua[:name]) == name && os_from_ua[:name] != name
+            name = os_from_ua[:name]
             version = nil if %w[LeafOS HarmonyOS].include?(name)
-            version = os_from_ua['version'] if name == 'PICO OS'
+            version = os_from_ua[:version] if name == 'PICO OS'
 
-            if name == 'Fire OS' && !empty?(os_from_client_hints['version'])
+            if name == 'Fire OS' && !empty?(os_from_client_hints[:version])
               major_version = version.split('.').first || 0
               version = FIRE_OS_VERSION_MAPPING[version] || FIRE_OS_VERSION_MAPPING[major_version] || ''
             end
           end
 
-          short = os_from_client_hints['short_name']
+          short = os_from_client_hints[:short_name]
 
-          if name == 'GNU/Linux' && os_from_ua['name'] == 'Chrome OS' && os_from_client_hints['version'] == os_from_ua['version']
-            name = os_from_ua['name']
-            short = os_from_ua['short_name']
+          if name == 'GNU/Linux' && os_from_ua[:name] == 'Chrome OS' && os_from_client_hints[:version] == os_from_ua[:version]
+            name = os_from_ua[:name]
+            short = os_from_ua[:short_name]
           end
 
-          if name == 'Android' && os_from_ua['name'] == 'Chrome OS'
-            name = os_from_ua['name']
+          if name == 'Android' && os_from_ua[:name] == 'Chrome OS'
+            name = os_from_ua[:name]
             version = nil
-            short = os_from_ua['short_name']
+            short = os_from_ua[:short_name]
           end
 
-          if name == 'GNU/Linux' && os_from_ua['name'] == 'Meta Horizon'
-            name = os_from_ua['name']
-            short = os_from_ua['short_name']
+          if name == 'GNU/Linux' && os_from_ua[:name] == 'Meta Horizon'
+            name = os_from_ua[:name]
+            short = os_from_ua[:short_name]
           end
-        elsif os_from_ua['name']
-          name = os_from_ua['name']
-          version = os_from_ua['version']
-          short = os_from_ua['short_name']
+        elsif os_from_ua[:name]
+          name = os_from_ua[:name]
+          version = os_from_ua[:version]
+          short = os_from_ua[:short_name]
         else
           return {}
         end
@@ -118,15 +118,15 @@ class DeviceDetector
         end
 
         result = {
-          'name' => name,
-          'short_name' => short,
-          'version' => version,
-          'platform' => platform,
-          'family' => family
+          name: name,
+          short_name: short,
+          version: version,
+          platform: platform,
+          family: family
         }
 
-        if OPERATING_SYSTEMS.key?(result['name'])
-          result['short_name'], result['name'] = short_os_data(result['name'])
+        if OPERATING_SYSTEMS.key?(result[:name])
+          result[:short_name], result[:name] = short_os_data(result[:name])
         end
 
         result
@@ -515,9 +515,9 @@ class DeviceDetector
         end
 
         {
-          'name' => name,
-          'short_name' => short,
-          'version' => build_version(version, [])
+          name: name,
+          short_name: short,
+          version: build_version(version, [])
         }
       end
 
@@ -529,34 +529,34 @@ class DeviceDetector
 
         os_regex, matches = regex_from_user_agent_cache do
           regexes.detect do |regex|
-            match = match_user_agent_r(regex['regex'])
+            match = match_user_agent_r(regex[:regex])
             match ? break [regex, match] : nil
           end
         end
 
         if matches
-          name = build_by_match(os_regex['name'], matches)
+          name = build_by_match(os_regex[:name], matches)
           short, name = short_os_data(name)
-          version = os_regex.key?('version') ? build_version(os_regex['version'], matches) : ''
+          version = os_regex.key?(:version) ? build_version(os_regex[:version], matches) : ''
 
-          os_regex.fetch('versions', []).each do |regex|
-            matches = match_user_agent(regex['regex'])
+          os_regex.fetch(:versions, []).each do |regex|
+            matches = match_user_agent(regex[:regex])
             next unless matches
 
-            if regex.key?('name')
-              name = build_by_match(regex['name'], matches)
+            if regex.key?(:name)
+              name = build_by_match(regex[:name], matches)
               short, name = short_os_data(name)
             end
 
-            version = build_version(regex['version'], matches) if regex.key?('version')
+            version = build_version(regex[:version], matches) if regex.key?(:version)
             break
           end
         end
 
         {
-          'name' => name,
-          'short_name' => short,
-          'version' => version
+          name: name,
+          short_name: short,
+          version: version
         }
       end
     end

@@ -12,7 +12,7 @@ class DeviceDetector
 
         regex_from_user_agent_cache do
           regexes.detect do |regex|
-            match_user_agent_r(regex['regex'])
+            match_user_agent_r(regex[:regex])
           end
         end
       end

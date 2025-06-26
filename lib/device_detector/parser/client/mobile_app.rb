@@ -14,21 +14,21 @@ class DeviceDetector
 
         def parse
           result = super
-          name = result&.fetch('name') || ''
-          version = result&.fetch('version') || ''
+          name = result&.fetch(:name) || ''
+          version = result&.fetch(:version) || ''
           app_hash = @app_hints.parse
 
-          if !app_hash.nil? && app_hash['name'] != name
-            name = app_hash['name']
+          if !app_hash.nil? && app_hash[:name] != name
+            name = app_hash[:name]
             version = ''
           end
 
           return nil if empty?(name)
 
           {
-            'type' => parser_name,
-            'name' => name,
-            'version' => version
+            type: parser_name,
+            name: name,
+            version: version
           }
         end
 

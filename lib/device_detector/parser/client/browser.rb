@@ -756,10 +756,10 @@ class DeviceDetector
           browser_from_client_hints = parse_browser_from_client_hints
           browser_from_ua = parse_browser_from_user_agent
 
-          if browser_from_client_hints['name'] && browser_from_client_hints['version']
-            name = browser_from_client_hints['name']
-            version = browser_from_client_hints['version']
-            short = browser_from_client_hints['short_name']
+          if browser_from_client_hints[:name] && browser_from_client_hints[:version]
+            name = browser_from_client_hints[:name]
+            version = browser_from_client_hints[:version]
+            short = browser_from_client_hints[:short_name]
             # engine is not ported yet
 
             if version =~ /^202[0-4]/
@@ -767,30 +767,30 @@ class DeviceDetector
               short = 'I1'
             end
 
-            if version =~ /^15/ && browser_from_ua['version'] =~ /^114/
+            if version =~ /^15/ && browser_from_ua[:version] =~ /^114/
               name = '360 Secure Browser'
               short = '3B'
             end
 
-            if browser_from_ua['version'] && %w[A0 AL HP JR MU OM OP
-                                                VR].include?(short)
-              version = browser_from_ua['version']
+            if browser_from_ua[:version] && %w[A0 AL HP JR MU OM OP
+                                               VR].include?(short)
+              version = browser_from_ua[:version]
             end
 
             # if ('Vewd Browser' === $name) -- engine only
 
             if ['Chromium', 'Chrome Webview'].include?(name) \
-              && browser_from_ua['name'] \
-              && !%w[CR CV AN].include?(browser_from_ua['short_name'])
+              && browser_from_ua[:name] \
+              && !%w[CR CV AN].include?(browser_from_ua[:short_name])
 
-              name = browser_from_ua['name']
-              short = browser_from_ua['short_name']
-              version = browser_from_ua['version']
+              name = browser_from_ua[:name]
+              short = browser_from_ua[:short_name]
+              version = browser_from_ua[:version]
             end
 
-            if browser_from_ua['name'] == "#{name} Mobile"
-              name = browser_from_ua['name']
-              short = browser_from_ua['short_name']
+            if browser_from_ua[:name] == "#{name} Mobile"
+              name = browser_from_ua[:name]
+              short = browser_from_ua[:short_name]
             end
 
             # engine only 'if'
@@ -804,16 +804,16 @@ class DeviceDetector
 
             # engine only 'if'
           else
-            name = browser_from_ua['name']
-            short = browser_from_ua['short_name']
-            version = browser_from_ua['version']
+            name = browser_from_ua[:name]
+            short = browser_from_ua[:short_name]
+            version = browser_from_ua[:version]
           end
 
           # family
           # TODO: https://github.com/matomo-org/device-detector/blob/6.4.5/Parser/Client/Browser.php#L1066
           app_hash = @browser_hints.parse
-          if app_hash&.fetch('name', nil) != nil
-            name = app_hash['name']
+          if app_hash&.fetch(:name, nil) != nil
+            name = app_hash[:name]
             version = ''
             short = browser_short_name(name)
 
@@ -825,10 +825,10 @@ class DeviceDetector
           return nil if (name.nil? || name == '') || @user_agent.match?(/Cypress|PhantomJS/)
 
           {
-            'type' => 'browser',
-            'name' => name,
-            'short_name' => short,
-            'version' => version
+            type: 'browser',
+            name: name,
+            short_name: short,
+            version: version
           }
         end
 
@@ -843,8 +843,8 @@ class DeviceDetector
 
           if brands
             brands.each do |info_hash|
-              brand = info_hash['brand']
-              brand_version = info_hash['version']
+              brand = info_hash[:brand]
+              brand_version = info_hash[:version]
 
               brand = apply_client_hint_mapping(brand).to_s
 
@@ -866,9 +866,9 @@ class DeviceDetector
           end
 
           {
-            'name' => name,
-            'short_name' => short,
-            'version' => build_version(version, [])
+            name: name,
+            short_name: short,
+            version: build_version(version, [])
           }
         end
 
@@ -876,29 +876,29 @@ class DeviceDetector
         def parse_browser_from_user_agent
           regex, matches = regex_from_user_agent_cache do
             regexes.detect do |regex|
-              match = match_user_agent_r(regex['regex'])
+              match = match_user_agent_r(regex[:regex])
               match ? break [regex, match] : nil
             end
           end
 
           if regex.nil?
             return {
-              'name' => '',
-              'short_name' => '',
-              'version' => ''
+              name: '',
+              short_name: '',
+              version: ''
             }
           end
 
-          name = build_by_match(regex['name'], matches)
+          name = build_by_match(regex[:name], matches)
           browser_short = browser_short_name(name)
 
           if browser_short
-            version = build_version(regex['version'], matches)
+            version = build_version(regex[:version], matches)
 
             return {
-              'name' => name,
-              'short_name' => browser_short,
-              'version' => version
+              name: name,
+              short_name: browser_short,
+              version: version
             }
           end
 

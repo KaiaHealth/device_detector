@@ -6,9 +6,13 @@ class DeviceDetector
   module Parser
     module Client
       class MobileApp < AbstractClientParser
-        def use(uas, hints)
+        def initialize
           super
           @app_hints = DeviceDetector::Parser::Client::Hint::AppHints.new
+        end
+
+        def use(uas, hints)
+          super
           @app_hints.use(uas, hints)
         end
 

@@ -6,9 +6,13 @@ class DeviceDetector
   module Parser
     module Client
       class Browser < AbstractClientParser
-        def use(uas, hints)
+        def initialize
           super
           @browser_hints = DeviceDetector::Parser::Client::Hint::BrowserHints.new
+        end
+
+        def use(uas, hints)
+          super
           @browser_hints.use(uas, hints)
         end
 

@@ -14,22 +14,22 @@ class DeviceDetector
         end
 
         def parse
-          return unless pre_match_overall?
+          regex_from_user_agent_cache do
+            next nil unless pre_match_overall?
 
-          regex, matches = regex_from_user_agent_cache do
-            regexes.detect do |regex|
+            regex, matches = regexes.detect do |regex|
               match = match_user_agent_r(regex[:regex])
               match ? break [regex, match] : nil
             end
+
+            next nil unless regex
+
+            {
+              type: parser_name,
+              name: build_by_match(regex[:name], matches),
+              version: build_version(regex[:version].to_s, matches)
+            }
           end
-
-          return nil unless regex
-
-          {
-            type: parser_name,
-            name: build_by_match(regex[:name], matches),
-            version: build_version(regex[:version].to_s, matches)
-          }
         end
       end
     end

@@ -34,12 +34,16 @@ class DeviceDetector
   MAJOR_VERSION_4 = Gem::Version.new('4.0')
   MAJOR_VERSION_8 = Gem::Version.new('8.0')
 
+  REGEX_CACHE = ::DeviceDetector::MemoryCache.new({})
+  private_constant :REGEX_CACHE
+
   attr_reader :client_hint, :user_agent
 
   def initialize(user_agent = nil, headers = nil)
     @parsers = {}
 
     @vendor_fragment_parser = DeviceDetector::Parser::VendorFragment.new
+    @operating_system_parser = DeviceDetector::Parser::OperatingSystem.new
 
     add_parser(Parser::Client::FeedReader.new)
     add_parser(Parser::Client::MobileApp.new)
@@ -59,7 +63,7 @@ class DeviceDetector
 
     add_parser(Parser::Bot.new)
 
-    use(user_agent, headers)
+    use(user_agent, headers) if user_agent || headers
   end
 
   def name
@@ -175,7 +179,7 @@ class DeviceDetector
   end
 
   def parse_os
-    parser = Parser::OperatingSystem.new
+    parser = @operating_system_parser
     parser.use(@user_agent, @client_hints)
 
     @os = parser.parse
@@ -340,8 +344,11 @@ class DeviceDetector
   end
 
   def match_user_agent(regex)
-    src = regex.gsub('/', '\/')
-    regexp = Regexp.new("(?:^|[^A-Z_-])(?:#{src})", Regexp::IGNORECASE)
+    regexp = REGEX_CACHE.get_or_set(regex) do
+      src = regex.gsub('/', '\/')
+      Regexp.new("(?:^|[^A-Z_-])(?:#{src})", Regexp::IGNORECASE)
+    end
+
     match = @user_agent.match(regexp)
     return unless match
 

@@ -8,10 +8,8 @@ class DeviceDetector
       end
 
       def parse
-        return nil unless pre_match_overall?
-
         regex_from_user_agent_cache do
-          regexes.detect do |regex|
+          pre_match_overall? && regexes.detect do |regex|
             match_user_agent_r(regex[:regex])
           end
         end

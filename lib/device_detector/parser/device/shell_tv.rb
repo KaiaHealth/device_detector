@@ -4,6 +4,11 @@ class DeviceDetector
   module Parser
     module Device
       class ShellTv < AbstractDeviceParser
+        def initialize
+          super
+          @shell_tv_regex = build_regex_for_ua('[a-z]+[ _]Shell[ _]\w{6}|tclwebkit(\d+[.\d]*)')
+        end
+
         def parse
           return nil unless shell_tv?
 
@@ -25,8 +30,7 @@ class DeviceDetector
         end
 
         def shell_tv?
-          regex = '[a-z]+[ _]Shell[ _]\w{6}|tclwebkit(\d+[.\d]*)'
-          match_user_agent(regex)
+          match_user_agent_r(@shell_tv_regex)
         end
       end
     end

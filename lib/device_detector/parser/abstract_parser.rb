@@ -13,6 +13,9 @@ class DeviceDetector
 
       USER_AGENT_CLIENT_HINTS_FRAGMENT_REGEX = %r{Android (?:10[.\d]*; K(?: Build/|[;)])|1[1-5]\)) AppleWebKit}i
 
+      DESKTOP_FRAGMENT_REGEX = /(?:Windows (?:NT|IoT)|X11; Linux x86_64)/i
+      DESKTOP_FRAGMENT_NON_DESKTOP_REGEX = %r{CE-HTML| Mozilla/|Andr[o0]id|Tablet|Mobile|iPhone|Windows Phone|ricoh|OculusBrowser|PicoBrowser|Lenovo|compatible; MSIE|Trident/|Tesla/|XBOX|FBMD/|ARM; ?([^)]+)}i
+
       def use(uas, hints)
         @user_agent = uas
         @client_hints = hints
@@ -96,15 +99,8 @@ class DeviceDetector
       end
 
       def desktop_fragment?
-        regex =
-          [
-            'CE-HTML',
-            ' Mozilla/|Andr[o0]id|Tablet|Mobile|iPhone|Windows Phone|ricoh|OculusBrowser',
-            'PicoBrowser|Lenovo|compatible; MSIE|Trident/|Tesla/|XBOX|FBMD/|ARM; ?([^)]+)'
-          ].join('|')
-
-        match_user_agent('(?:Windows (?:NT|IoT)|X11; Linux x86_64)') &&
-          !match_user_agent(regex)
+        match_user_agent_r(DESKTOP_FRAGMENT_REGEX) &&
+          !match_user_agent_r(DESKTOP_FRAGMENT_NON_DESKTOP_REGEX)
       end
 
       def fixture_file
@@ -137,21 +133,24 @@ class DeviceDetector
       end
 
       def pre_match_overall?
-        overall_regex = REGEX_CACHE.get_or_set("overall-#{fixture_file}") do
-          regex_list = load_regexes
-          regex_list = regex_list.values if regex_list.is_a?(Hash)
+        regex_from_user_agent_cache('overall') do
+          overall_regex = REGEX_CACHE.get_or_set("overall-#{fixture_file}") do
+            regex_list = load_regexes
+            regex_list = regex_list.values if regex_list.is_a?(Hash)
 
-          full_regex = regex_list.reduce('') do |res, regex|
-            if regex
-              "#{res}|#{regex['regex']}"
-            else
-              res
-            end
-          end.delete_prefix('|')
+            full_regex = regex_list.reduce('') do |res, regex|
+              if regex
+                "#{res}|#{regex['regex']}"
+              else
+                res
+              end
+            end.delete_prefix('|')
 
-          build_regex_for_ua(full_regex)
+            build_regex_for_ua(full_regex)
+          end
+
+          match_user_agent_r(overall_regex)
         end
-        match_user_agent_r(overall_regex)
       end
 
       def match_user_agent(regex)

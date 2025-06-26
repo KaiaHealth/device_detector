@@ -2,7 +2,7 @@
 
 class DeviceDetector
   class MemoryCache
-    DEFAULT_MAX_KEYS = 5000
+    DEFAULT_MAX_KEYS = 15_000
     STORES_NIL_VALUE = :__is_nil__
 
     attr_reader :data, :max_keys, :lock

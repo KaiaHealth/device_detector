@@ -67,58 +67,57 @@ class DeviceDetector
   end
 
   def name
-    return unless @client
+    return unless client_result
 
-    @client[:name]
+    client_result[:name]
   end
 
   def full_version
-    return unless @client
+    return unless client_result
 
-    @client[:version]
+    client_result[:version]
   end
 
   def os_family
-    presence(@os&.fetch(:family, nil))
+    presence(os_result[:family])
   end
 
   def os_name
-    presence(@os&.fetch(:name, nil))
+    presence(os_result[:name])
   end
 
   def os_full_version
-    presence(@os&.fetch(:version, nil))
+    presence(os_result[:version])
   end
 
   def device_name
-    presence(@model)
+    presence(device_result[:model])
   end
 
   def device_brand
-    presence(@brand)
+    presence(device_result[:brand])
   end
 
   def device_type
-    presence(@device)
+    presence(device_result[:device])
   end
 
   def known?
-    !@client.nil?
+    !client_result.nil?
   end
 
   def bot?
-    @bot ? true : false
+    bot_result ? true : false
   end
 
   def bot_name
-    @bot&.fetch(:name, nil)
+    bot_result&.fetch(:name, nil)
   end
 
   def use(user_agent, headers = nil)
     reset
     self.user_agent = user_agent
     self.headers = headers
-    parse
     self
   end
 
@@ -149,40 +148,69 @@ class DeviceDetector
 
   private
 
-  def parse
-    return if @parsed
+  def bot_result
+    return @bot_result if @bot_parsed
 
-    @parsed = true
-
-    return if (@user_agent.empty? || @user_agent !~ /[a-z]/i) && @client_hints.nil?
-
-    parse_bot
-    return if bot?
-
-    parse_os
-    parse_client
-    parse_device
+    @bot_parsed = true
+    @bot_result = parse_bot if should_parse?
   end
 
-  # COPY_COMPLETE
+  def client_result
+    return @client_result if @client_parsed
+
+    @client_parsed = true
+
+    @client_result = if bot? || !should_parse?
+                       nil
+                     else
+                       parse_client
+                     end
+  end
+
+  def os_result
+    return @os_result if @os_parsed
+
+    @os_parsed = true
+    @os_result = if bot? || !should_parse?
+                   {}
+                 else
+                   parse_os
+                 end
+  end
+
+  def device_result
+    return @device_result if @device_parsed
+
+    @device_parsed = true
+    @device_result = if bot? || !should_parse?
+                       {}
+                     else
+                       parse_device
+
+                       {
+                         model: @model,
+                         brand: @brand,
+                         device: @device
+                       }
+                     end
+  end
+
   def parse_bot
     @parsers.fetch(:bot, []).each do |parser|
       parser.use(@user_agent, @client_hints)
 
       bot = parser.parse
 
-      if bot
-        @bot = bot
-        break
-      end
+      return bot if bot
     end
+    nil
   end
 
   def parse_os
     parser = @operating_system_parser
     parser.use(@user_agent, @client_hints)
 
-    @os = parser.parse
+    parser.parse || {}
   end
 
   def parse_client
@@ -191,11 +219,9 @@ class DeviceDetector
 
       client = parser.parse
 
-      if client
-        @client = client
-        break
-      end
+      return client if client
     end
+    nil
   end
 
   def parse_device
@@ -327,13 +353,21 @@ class DeviceDetector
 
   # Resets all detected data
   def reset
-    @bot    = nil
-    @client = nil
-    @device = nil
-    @os     = nil
-    @brand  = nil
+    @bot_result    = nil
+    @bot_parsed    = nil
+
+    @client_result = nil
+    @client_parsed = nil
+
+    @os_result     = nil
+    @os_parsed     = nil
+
+    @device_result = nil
+    @device_parsed = nil
+
     @model  = nil
-    @parsed = false
+    @brand  = nil
+    @device = nil
   end
 
   def add_parser(parser)
@@ -380,11 +414,19 @@ class DeviceDetector
   end
 
   def uses_mobile_browser?
-    @client&.fetch(:type) == 'browser' && DeviceDetector::Parser::Client::Browser.mobile_only_browser?(name)
+    client_result&.fetch(:type) == 'browser' && DeviceDetector::Parser::Client::Browser.mobile_only_browser?(name)
   end
 
   def touch_enabled?
     match_user_agent('Touch')
+  end
+
+  def should_parse?
+    if (@user_agent.nil? || @user_agent.empty? || @user_agent !~ /[a-z]/i) && @client_hints.nil?
+      return false
+    end
+
+    true
   end
 
   def presence(var)

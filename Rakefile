@@ -45,7 +45,7 @@ MATOMO_REPO_URL = 'https://github.com/matomo-org/device-detector'
 MATOMO_REPO_TAG = '6.4.6'
 MATOMO_CHECKOUT_LOCATION = '/tmp/matomo_device_detector'
 
-def get_latest_matomo_checkout
+def matomo_checkout!
   if File.exist?(MATOMO_CHECKOUT_LOCATION)
     system "cd #{MATOMO_CHECKOUT_LOCATION}; git fetch origin; git reset --hard #{MATOMO_REPO_TAG}"
   else
@@ -56,7 +56,7 @@ end
 desc 'update regex database from matomo project'
 task :update_regexes do
   top = File.expand_path(__dir__)
-  get_latest_matomo_checkout
+  matomo_checkout!
   Dir.glob("#{top}/regexes/**/*.yml").each do |f|
     File.unlink(f)
   end
@@ -66,7 +66,7 @@ end
 desc 'update fixtures from matomo project'
 task :update_fixtures do
   top = File.expand_path(__dir__)
-  get_latest_matomo_checkout
+  matomo_checkout!
 
   fixture_mappings = [
     { target_path: "#{top}/spec/fixtures/detector", source_path: 'Tests/fixtures/*.yml' },

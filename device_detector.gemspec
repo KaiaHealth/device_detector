@@ -20,5 +20,5 @@ Gem::Specification.new do |spec|
   spec.executables   = []
   spec.require_paths = ['lib']
 
-  spec.required_ruby_version = '>= 3.4.3'
+  spec.required_ruby_version = '>= 3.0'
 end

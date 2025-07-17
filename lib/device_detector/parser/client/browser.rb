@@ -881,7 +881,7 @@ class DeviceDetector
           regex, matches = regex_from_user_agent_cache do
             regexes.detect do |regex|
               match = match_user_agent_r(regex[:regex])
-              match ? break [regex, match] : nil
+              break [regex, match] if match
             end
           end
 

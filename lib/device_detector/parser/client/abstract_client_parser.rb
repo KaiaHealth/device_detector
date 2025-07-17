@@ -19,7 +19,7 @@ class DeviceDetector
 
             regex, matches = regexes.detect do |regex|
               match = match_user_agent_r(regex[:regex])
-              match ? break [regex, match] : nil
+              break [regex, match] if match
             end
 
             next nil unless regex

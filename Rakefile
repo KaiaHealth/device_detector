@@ -6,13 +6,6 @@ require 'rake/testtask'
 $LOAD_PATH.unshift 'lib'
 require 'device_detector'
 
-Rake::TestTask.new do |t|
-  t.pattern = 'spec/**/*_spec.rb'
-  t.libs.push 'spec'
-end
-
-task default: :test
-
 desc 'generate detectable names output for README'
 task :detectable_names do
   require 'date'

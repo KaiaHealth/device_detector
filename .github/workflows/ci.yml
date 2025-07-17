@@ -28,7 +28,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
 
       - name: Setup Ruby cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: vendor/bundle
           key: ${{ runner.os }}-gems-${{ matrix.ruby }}-${{ hashFiles('**/Gemfile.lock') }}
@@ -44,4 +44,4 @@ jobs:
 
       - name: Test
         run: |
-          bundle exec rake test
+          bundle exec rspec

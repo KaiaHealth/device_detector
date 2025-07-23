@@ -1,10 +1,15 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
 # Specify your gem's dependencies in device_detector.gemspec
 gemspec
 
-gem 'byebug' if RUBY_VERSION >= '2.0' && defined?(RUBY_ENGINE) && RUBY_ENGINE == 'ruby'
+gem 'byebug'
 
 gem 'rake'
 gem 'rspec'
 gem 'rubocop', '>= 1.75'
+
+gem 'browser', require: false
+gem 'useragent', require: false

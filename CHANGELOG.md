@@ -2,8 +2,10 @@
 
 ## [2.0.0]
 
+Breaking change: the default memory cache now holds 15.000 items instead of 5.000
 Breaking change: remove public method `DeviceDetector#build_user_agent`
 Breaking change: remove public method `DeviceDetector#encode_user_agent_if_needed`
+Breaking change: Ruby < 3.0 is no longer tested
 
 ## [1.1.3]
 

@@ -30,12 +30,18 @@ class DeviceDetector
   def build_user_agent(user_agent)
     return user_agent if client_hint.model.nil?
 
-    regex = build_regex('Android 10[.\d]*; K(?: Build/|[;)])')
-    return user_agent unless user_agent =~ regex
+    ua = user_agent
 
-    version = client_hint.os_version || '10'
+    if ua =~ build_regex('Android (?:10[.\d]*; K|1[1-5])')
+      version = client_hint.os_version || '10'
+      ua = ua.gsub(/Android (?:10[.\d]*; K|1[1-5])/, "Android #{version}; #{client_hint.model}")
+    end
 
-    user_agent.gsub(/(Android 10[.\d]*; K)/, "Android #{version}; #{client_hint.model}")
+    if ua =~ build_regex('X11; Linux x86_64')
+      ua = ua.gsub('X11; Linux x86_64', "X11; Linux x86_64; #{client_hint.model}")
+    end
+
+    ua
   end
 
   def encode_user_agent_if_needed(user_agent)
@@ -47,8 +53,15 @@ class DeviceDetector
 
   def name
     return client.name if mobile_fix?
+    hinted_name = client_hint.browser_name
+    return client.name if hinted_name.nil?
 
-    client_hint.browser_name || client.name
+    if generic_client_hint_browser?(hinted_name)
+      return client_hint.app_name if client_hint.app_name
+      return client.name if specific_client_name?(client.name)
+    end
+
+    hinted_name
   end
 
   def full_version
@@ -58,13 +71,13 @@ class DeviceDetector
   def os_family
     return 'GNU/Linux' if linux_fix?
 
-    client_hint.os_family || os.family || client_hint.platform
+    merged_os_family
   end
 
   def os_name
     return 'GNU/Linux' if linux_fix?
 
-    client_hint.os_name || os.name || client_hint.platform
+    merged_os_name
   end
 
   def os_full_version
@@ -254,10 +267,94 @@ class DeviceDetector
     client.name == "#{client_hint.browser_name} Mobile"
   end
 
+  def generic_client_hint_browser?(browser_name)
+    %w[Chromium Microsoft\ Edge Chrome\ Webview Chrome Chrome\ Mobile].include?(browser_name)
+  end
+
+  def specific_client_name?(client_name)
+    !client_name.nil? && !client_name.empty? && !generic_client_hint_browser?(client_name)
+  end
+
   def linux_fix?
     client_hint.platform == 'Linux' &&
       %w[iOS Android].include?(os.name) &&
       %w[?0 0].include?(client_hint.mobile)
+  end
+
+  def merged_os_name
+    hinted_name = hinted_os_name
+    user_agent_name = os.name
+
+    if hinted_name
+      user_agent_family = os.family || inferred_os_family(user_agent_name)
+
+      # If CH provides a family name (e.g. Android, GNU/Linux) and UA provides a
+      # more specific OS inside that family (e.g. Fire OS, Fedora), prefer UA.
+      if user_agent_name && user_agent_name != hinted_name && user_agent_family == hinted_name
+        return user_agent_name
+      end
+
+      # Meta Horizon is often reported as Linux in Client Hints.
+      return user_agent_name if hinted_name == 'GNU/Linux' && user_agent_name == 'Meta Horizon'
+
+      # Chrome OS may be reported as Linux in Client Hints.
+      if hinted_name == 'GNU/Linux' &&
+         user_agent_name == 'Chrome OS' &&
+         !client_hint.os_version.nil? &&
+         client_hint.os_version == os.full_version
+        return user_agent_name
+      end
+
+      # Chrome OS may be reported as Android in Client Hints.
+      return user_agent_name if hinted_name == 'Android' && user_agent_name == 'Chrome OS'
+
+      return hinted_name
+    end
+
+    user_agent_name || client_hint.platform
+  end
+
+  def merged_os_family
+    os_name = merged_os_name
+
+    family = family_for_os_name(os_name) || inferred_os_family(os_name)
+    return family if family
+
+    hinted_family = family_for_os_name(hinted_os_name) || inferred_os_family(hinted_os_name)
+    hinted_family || os.family || client_hint.platform
+  end
+
+  def hinted_os_name
+    return client_hint.os_name if client_hint.os_name
+
+    case client_hint.platform
+    when 'Android'
+      'Android'
+    when 'Linux'
+      'GNU/Linux'
+    when 'MacOS'
+      'Mac'
+    else
+      nil
+    end
+  end
+
+  def family_for_os_name(os_name)
+    return if os_name.nil?
+
+    short = DeviceDetector::OS::DOWNCASED_OPERATING_SYSTEMS[os_name.downcase]
+    return if short.nil?
+
+    DeviceDetector::OS::FAMILY_TO_OS[short]
+  end
+
+  def inferred_os_family(os_name)
+    return if os_name.nil?
+
+    {
+      'LeafOS' => 'Android',
+      'Meta Horizon' => 'Android'
+    }[os_name]
   end
 
   # Related to issue mentionned in device.rb#1562

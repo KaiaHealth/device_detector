@@ -1,0 +1,92 @@
+name: Weekly Regex Update
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-regexes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Pull Latest Regex YAML Files from Matomo
+        run: |
+          set -euo pipefail
+          TMP_DIR="$(mktemp -d)"
+          trap 'rm -rf "$TMP_DIR"' EXIT
+
+          git clone --depth 1 https://github.com/matomo-org/device-detector.git "$TMP_DIR/matomo"
+
+          find regexes -type f -name '*.yml' -delete
+          rsync -a --prune-empty-dirs \
+            --include='*/' \
+            --include='*.yml' \
+            --exclude='*' \
+            "$TMP_DIR/matomo/regexes/" regexes/
+
+      - name: Check for Regex Changes
+        id: diff
+        run: |
+          if git diff --quiet -- regexes; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run Test Suite
+        id: test
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          set +e
+          bundle exec rake test 2>&1 | tee test.log
+          STATUS=${PIPESTATUS[0]}
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Commit and Push Regex Updates
+        if: steps.diff.outputs.changed == 'true' && steps.test.outputs.status == '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add regexes
+          git commit -m "Update device regexes from matomo"
+          git push
+
+      - name: Notify Slack on Test Failure
+        if: steps.diff.outputs.changed == 'true' && steps.test.outputs.status != '0'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.KAIA_BACKEND_SLACK_WEBHOOK_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo "KAIA_BACKEND_SLACK_WEBHOOK_URL is not configured"
+            exit 1
+          fi
+
+          LOG_SNIPPET="$(tail -n 150 test.log | head -c 3000)"
+          RUN_URL="https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          jq -n \
+            --arg text "Device detector regex update failed tests, manual review needed (#kaia-backend)\nRepository: ${GITHUB_REPOSITORY}\nWorkflow run: ${RUN_URL}\n\nRecent test logs:\n${LOG_SNIPPET}" \
+            '{text: $text}' > slack_payload.json
+
+          curl -X POST -H 'Content-type: application/json' --data @slack_payload.json "$SLACK_WEBHOOK_URL"
+
+      - name: Fail Workflow If Tests Failed
+        if: steps.diff.outputs.changed == 'true' && steps.test.outputs.status != '0'
+        run: |
+          echo "Tests failed after regex update."
+          exit 1

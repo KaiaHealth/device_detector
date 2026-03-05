@@ -3893,7 +3893,7 @@
     engine_version: "534.30"
   device:
     type: tablet
-    brand: MyPhone
+    brand: MyPhone (PH)
     model: MyPad 1000 HD
   os_family: Android
   browser_family: Android Browser
@@ -3911,7 +3911,7 @@
     engine_version: "533.1"
   device:
     type: tablet
-    brand: MyPhone
+    brand: MyPhone (PH)
     model: MyPad 2
   os_family: Android
   browser_family: Unknown
@@ -3929,7 +3929,7 @@
     engine_version: 34.0.1847.114
   device:
     type: tablet
-    brand: MyPhone
+    brand: MyPhone (PH)
     model: MyPad 750HD
   os_family: Android
   browser_family: Chrome
@@ -3947,8 +3947,8 @@
     engine_version: 52.0.2743.98
   device:
     type: tablet
-    brand: MyPhone
-    model: MyTab 10 II
+    brand: myPhone (PL)
+    model: myTab 10 II
   os_family: Android
   browser_family: Chrome
 -
@@ -3965,8 +3965,8 @@
     engine_version: 30.0.0.0
   device:
     type: tablet
-    brand: MyPhone
-    model: MyTab 10 Q
+    brand: myPhone (PL)
+    model: myTab 10 Q
   os_family: Android
   browser_family: Chrome
 -
@@ -8693,7 +8693,7 @@
     engine_version: 76.0.3809.132
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: ""
   os_family: Android
   browser_family: Unknown
@@ -8711,7 +8711,7 @@
     engine_version: 35.0.1916.122
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: "10.4"
   os_family: Android
   browser_family: Chrome
@@ -8729,7 +8729,7 @@
     engine_version: "533.1"
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: 3W A73
   os_family: Android
   browser_family: Android Browser
@@ -8747,7 +8747,7 @@
     engine_version: "534.30"
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: 3W7
   os_family: Android
   browser_family: Android Browser
@@ -8765,7 +8765,7 @@
     engine_version: "534.30"
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: 3W9.4
   os_family: Android
   browser_family: Android Browser
@@ -8783,7 +8783,7 @@
     engine_version: "530.17"
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: 3WT70
   os_family: Android
   browser_family: Android Browser
@@ -8801,7 +8801,7 @@
     engine_version: 71.0.3578.99
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: 9.7 3G
   os_family: Android
   browser_family: Opera
@@ -8819,7 +8819,7 @@
     engine_version: "537.31"
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: Air S70
   os_family: Android
   browser_family: Chrome
@@ -8837,7 +8837,7 @@
     engine_version: 30.0.0.0
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: Sky 7.85" 3G
   os_family: Android
   browser_family: Chrome
@@ -8855,7 +8855,7 @@
     engine_version: 70.0.3538.110
   device:
     type: tablet
-    brand: RoverPad
+    brand: Rover Computers
     model: Sky 9.7
   os_family: Android
   browser_family: Chrome
@@ -9279,7 +9279,7 @@
     brand: RCA Tablets
     model: Atlas 10.0"
   os_family: Android
-  browser_family: Unknown
+  browser_family: Chrome
 -
   user_agent: Mozilla/5.0 (Linux; Android 9; TBBVNC100005208) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36
   os:

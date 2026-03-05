@@ -52,20 +52,36 @@ class DeviceDetector
   end
 
   def name
-    return client.name if mobile_fix?
+    user_agent_name = client.name
     hinted_name = client_hint.browser_name
-    return client.name if hinted_name.nil?
+    hinted_version = client_hint.browser_version
 
-    if generic_client_hint_browser?(hinted_name)
-      return client_hint.app_name if client_hint.app_name
-      return client.name if specific_client_name?(client.name)
+    merged_name = if hinted_name && hinted_version && !hinted_version.empty?
+                    hinted_name
+                  else
+                    user_agent_name
+                  end
+
+    # If CH reports a generic Chromium/WebView browser, prefer a specific UA-detected browser.
+    if ['Chromium', 'Chrome Webview'].include?(merged_name) &&
+       user_agent_name && !%w[Chromium Chrome\ Webview Android\ Browser Chrome\ Mobile].include?(user_agent_name)
+      merged_name = user_agent_name
     end
 
-    hinted_name
+    # Fix mobile browser names e.g. "Chrome" => "Chrome Mobile".
+    if hinted_name && "#{hinted_name} Mobile" == user_agent_name
+      merged_name = user_agent_name
+    end
+
+    # Requested app id hints should override when available.
+    app_name = client_hint.app_name
+    merged_name = app_name if app_name && app_name != merged_name
+
+    merged_name
   end
 
   def full_version
-    client_hint.full_version || client.full_version
+    client_hint.browser_version || client.full_version
   end
 
   def os_family
@@ -91,7 +107,11 @@ class DeviceDetector
   def device_name
     return if fake_ua?
 
-    device.name || client_hint.model || fix_for_x_music
+    name = device.name || client_hint.model || fix_for_x_music
+    name = philips_tv_model if (name.nil? || name =~ /^TPM[0-9A-Z]+$/) && philips_tv_model
+    name = aoc_tv_model if name.nil? && aoc_tv_model
+    name = whale_tv_model if name.nil? && !projector_fragment? && whale_tv_model
+    name
   end
 
   def device_brand
@@ -99,7 +119,18 @@ class DeviceDetector
 
     # Assume all devices running iOS / Mac OS are from Apple
     brand = device.brand
+    brand = brand_from_tv_signature if brand.nil? || brand == 'Vestel'
+    if brand.nil? && vestel_fragment?
+      # Keep unknown/ambiguous TV signatures unbranded; non-TV Vestel fragments
+      # (e.g. VTab family) should still resolve to Vestel.
+      if device_type == 'tv'
+        brand = 'Vestel' unless vestel_placeholder_signature?
+      else
+        brand = 'Vestel'
+      end
+    end
     brand = 'Apple' if brand.nil? && DeviceDetector::OS::APPLE_OS_NAMES.include?(os_name)
+    brand = 'coocaa' if brand.nil? && os_name == 'Coolita OS'
 
     brand
   end
@@ -108,6 +139,8 @@ class DeviceDetector
     t = device.type
 
     t = nil if fake_ua?
+    t = device_type_from_form_factors if t.nil?
+    t = 'peripheral' if projector_fragment? && (t.nil? || t == 'tv')
 
     # Chrome on Android passes the device type based on the keyword 'Mobile'
     # If it is present the device should be a smartphone, otherwise it's a tablet
@@ -157,6 +190,9 @@ class DeviceDetector
     # All unknown devices under running Java ME are more likely a features phones
     t = 'feature phone' if t.nil? && os_name == 'Java ME'
 
+    # All devices running KaiOS are more likely feature phones.
+    t = 'feature phone' if os_name == 'KaiOS'
+
     # According to http://msdn.microsoft.com/en-us/library/ie/hh920767(v=vs.85).aspx
     # Internet Explorer 10 introduces the "Touch" UA string token. If this token is present at the
     # end of the UA string, the computer has touch capability, and is running Windows 8 (or later).
@@ -171,11 +207,20 @@ class DeviceDetector
       t = 'tablet'
     end
 
+    # Puffin desktop/smartphone/tablet suffix hints.
+    t = 'desktop' if t.nil? && user_agent =~ /Puffin\/(?:\d+[.\d]+)[LMW]D/i
+    t = 'smartphone' if t.nil? && user_agent =~ /Puffin\/(?:\d+[.\d]+)[AIFLW]P/i
+    t = 'tablet' if t.nil? && user_agent =~ /Puffin\/(?:\d+[.\d]+)[AILW]T/i
+
     # All devices running Opera TV Store are assumed to be a tv
     t = 'tv' if opera_tv_store?
 
+    # All devices running Coolita OS are assumed to be a tv.
+    t = 'tv' if os_name == 'Coolita OS'
+
     # All devices that contain Andr0id in string are assumed to be a tv
-    if user_agent =~ build_regex('Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA')
+    has_tv_fragment = user_agent =~ /Andr0id|(?:Android(?: UHD)?|Google) TV|\(lite\) TV|BRAVIA|Firebolt| TV$/i
+    if has_tv_fragment && !%w[tv peripheral].include?(t)
       t = 'tv'
     end
 
@@ -186,7 +231,7 @@ class DeviceDetector
     t = 'tv' if ['Kylo', 'Espial TV Browser', 'LUJO TV Browser', 'LogicUI TV Browser',
                  'Open TV Browser', 'Seraphic Sraf', 'Opera Devices', 'Crow Browser',
                  'Vewd Browser', 'TiviMate', 'Quick Search TV', 'QJY TV Browser',
-                 'TV Bro'].include?(name)
+                 'TV Bro', 'Redline'].include?(name)
 
     # All devices containing TV fragment are assumed to be a tv
     t = 'tv' if t.nil? && user_agent =~ build_regex('\(TV;')
@@ -261,24 +306,10 @@ class DeviceDetector
     device.brand == 'Apple' && !DeviceDetector::OS::APPLE_OS_NAMES.include?(os_name)
   end
 
-  # https://github.com/matomo-org/device-detector/blob/be1c9ef486c247dc4886668da5ed0b1c49d90ba8/Parser/Client/Browser.php#L772
-  # Fix mobile browser names e.g. Chrome => Chrome Mobile
-  def mobile_fix?
-    client.name == "#{client_hint.browser_name} Mobile"
-  end
-
-  def generic_client_hint_browser?(browser_name)
-    %w[Chromium Microsoft\ Edge Chrome\ Webview Chrome Chrome\ Mobile].include?(browser_name)
-  end
-
-  def specific_client_name?(client_name)
-    !client_name.nil? && !client_name.empty? && !generic_client_hint_browser?(client_name)
-  end
-
   def linux_fix?
     client_hint.platform == 'Linux' &&
       %w[iOS Android].include?(os.name) &&
-      %w[?0 0].include?(client_hint.mobile)
+      client_hint.mobile == false
   end
 
   def merged_os_name
@@ -352,9 +383,72 @@ class DeviceDetector
     return if os_name.nil?
 
     {
+      'ArcaOS' => 'IBM',
+      'Azure Linux' => 'GNU/Linux',
+      'blackPanther OS' => 'GNU/Linux',
+      'BSD' => 'Unix',
+      'Contiki' => 'Other Mobile',
+      'Coolita OS' => 'GNU/Linux',
+      'elementary OS' => 'GNU/Linux',
+      'GhostBSD' => 'Unix',
+      'KolibriOS' => 'Real-time OS',
       'LeafOS' => 'Android',
-      'Meta Horizon' => 'Android'
+      'Linpus' => 'GNU/Linux',
+      'Meta Horizon' => 'Android',
+      'MINIX' => 'Unix',
+      'Mocor OS' => 'Real-time OS',
+      'NuttX' => 'Real-time OS',
+      'openSUSE' => 'GNU/Linux',
+      'OpenHarmony' => 'Android',
+      'Orsay' => 'Other Smart TV',
+      'Plan 9' => 'Unix',
+      'Puffin OS' => 'Android',
+      'risingOS' => 'Android',
+      'RTOS & Next' => 'Real-time OS',
+      'Smartisan OS' => 'Android',
+      'Titan OS' => 'Other Smart TV',
+      'ViziOS' => 'GNU/Linux'
     }[os_name]
+  end
+
+  def brand_from_tv_signature
+    token = user_agent[/\(Vestel MB[0-9A-Z]+\s+([A-Z0-9_+\-]+)\)/i, 1]
+    token ||= user_agent[/FVC\/[0-9.]+\s+\(([A-Z0-9_+\-]+);\s*MB[0-9A-Z]+;/i, 1]
+    token ||= user_agent[/HbbTV\/[0-9.]+\s+\((?:\+DRM;\s*)?([A-Z0-9_+\-]+);\s*MB[0-9A-Z]+;/i, 1]
+    token ||= user_agent[/MB9[78]\/[0-9.]+\s+\(([^,;()]+),/i, 1]
+    token ||= user_agent[/\((Hotack)[0-9A-Z]*;/i, 1]
+    token ||= user_agent[/Model\/[A-Z0-9]+\s+\(([A-Za-z0-9_+\-]+);WHALEOS/i, 1]
+    return if token.nil?
+
+    normalized = token.strip
+    return 'HOTACK' if normalized.casecmp('hotack').zero?
+    return 'VOX Electronics' if normalized.casecmp('vox').zero?
+    return 'elit' if normalized.casecmp('elit').zero?
+    return 'Top-Tech' if normalized.downcase.start_with?('toptech')
+    return 'HIGH1ONE' if normalized.casecmp('high_one').zero? || normalized.casecmp('highone').zero?
+    normalized = normalized.sub(/[0-9]+$/, '')
+
+    normalized_key = normalized.gsub(/[^a-z0-9]/i, '').downcase
+    known_brand = DeviceDetector::Device::DEVICE_BRANDS.values.find do |value|
+      value.gsub(/[^a-z0-9]/i, '').downcase == normalized_key
+    end
+
+    known_brand || normalized
+  end
+
+  def philips_tv_model
+    user_agent[/;Philips;([^;]+);TPM/i, 1]
+  end
+
+  def aoc_tv_model
+    user_agent[/\(AOC,\s*([^,()]+),/i, 1] || user_agent[/\(AOC;([^;()]+);/i, 1]
+  end
+
+  def whale_tv_model
+    year = user_agent[/LaTivu_(?:\d+[.\d]+)_([0-9]{4})/, 1]
+    return if year.nil?
+
+    "Smart TV (#{year})"
   end
 
   # Related to issue mentionned in device.rb#1562
@@ -378,9 +472,42 @@ class DeviceDetector
 
   # https://github.com/matomo-org/device-detector/blob/323629cb679c8572a9745cba9c3803fee13f3cf6/Parser/OperatingSystem.php#L378-L383
   def skip_os_version?
-    !client_hint.os_family.nil? &&
+    hinted_family = family_for_os_name(hinted_os_name) || inferred_os_family(hinted_os_name) || client_hint.os_family
+    !hinted_family.nil? &&
       client_hint.os_version.nil? &&
-      client_hint.os_family != os.family
+      hinted_family != os.family
+  end
+
+  def projector_fragment?
+    user_agent =~ /_Projector_|Projector/i
+  end
+
+  def vestel_fragment?
+    user_agent =~ /\bVESTEL\b|\bVestel\b|Vestel_|VSTVB MB|Venus[_ -]|V[_ ]TAB|\bVTAB[0-9A-Z]+\b|\bVT[0-9]{2,}[A-Z0-9]*\b|\bVP[0-9]{2,}[A-Z0-9]*\b|VSP[0-9A-Z]+|V3_[0-9]+/i
+  end
+
+  def vestel_placeholder_signature?
+    user_agent =~ /HbbTV\/[0-9.]+\s+\(\s*;\s*TEST;\s*MB[0-9A-Z]+;/i
+  end
+
+  def device_type_from_form_factors
+    mapping = {
+      'automotive' => 'car browser',
+      'xr' => 'wearable',
+      'watch' => 'wearable',
+      'mobile' => 'smartphone',
+      'tablet' => 'tablet',
+      'desktop' => 'desktop',
+      'eink' => 'tablet'
+    }
+
+    form_factors = Array(client_hint.form_factors).map { |form_factor| form_factor.to_s.downcase }
+
+    mapping.each do |form_factor, device_type|
+      return device_type if form_factors.include?(form_factor)
+    end
+
+    nil
   end
 
   def android_tablet_fragment?

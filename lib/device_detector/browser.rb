@@ -2,7 +2,7 @@
 
 class DeviceDetector
   class Browser
-    # https://github.com/matomo-org/device-detector/blob/75d88bbefb0182f9207c9f48dc39b1bc8c7cc43f/Parser/Client/Browser.php#L48-L680
+    # Synced from Matomo Parser/Client/Browser.php
     AVAILABLE_BROWSERS = {
       'V1' => 'Via',
       '1P' => 'Pure Mini Browser',
@@ -37,26 +37,31 @@ class DeviceDetector
       '7B' => '7654 Browser',
       'AA' => 'Avant Browser',
       'AB' => 'ABrowse',
+      '00' => 'Ace',
       '4A' => 'Acoo Browser',
       'BW' => 'AdBlock Browser',
       'A7' => 'Adult Browser',
+      '8A' => 'Ai Browser',
       'A9' => 'Airfind Secure Browser',
       'AF' => 'ANT Fresco',
       'AG' => 'ANTGalio',
       'AL' => 'Aloha Browser',
       'AH' => 'Aloha Browser Lite',
       'A8' => 'ALVA',
+      '9A' => 'AltiBrowser',
       'AM' => 'Amaya',
       'A3' => 'Amaze Browser',
       'A5' => 'Amerigo',
       'AO' => 'Amigo',
       'AN' => 'Android Browser',
+      'AY' => 'Anonyv Browser',
       '3A' => 'AOL Explorer',
       'AE' => 'AOL Desktop',
       'AD' => 'AOL Shield',
       'A4' => 'AOL Shield Pro',
       '2A' => 'Aplix',
       'A6' => 'AppBrowzer',
+      '0A' => 'AppTec Secure Browser',
       'AP' => 'APUS Browser',
       'AR' => 'Arora',
       'AX' => 'Arctic Fox',
@@ -64,9 +69,12 @@ class DeviceDetector
       'AW' => 'Amiga Aweb',
       'PN' => 'APN Browser',
       '6A' => 'Arachne',
-      'RA' => 'Arc',
+      'RA' => 'Arc Search',
+      'R5' => 'Armorfly Browser',
+      'AQ' => 'ArtisBrowser',
       'AI' => 'Arvin',
       'AK' => 'Ask.com',
+      'KA' => 'Ask Browser',
       'AU' => 'Asus Browser',
       'A0' => 'Atom',
       'AT' => 'Atomic Web Browser',
@@ -75,6 +83,7 @@ class DeviceDetector
       'VG' => 'AVG Secure Browser',
       'AC' => 'Avira Secure Browser',
       'A1' => 'AwoX',
+      '7A' => 'Awesomium',
       '5B' => 'Basic Web Browser',
       'BA' => 'Beaker Browser',
       'BM' => 'Beamrise',
@@ -94,7 +103,9 @@ class DeviceDetector
       'B2' => 'Berry Browser',
       'BT' => 'Bitchute Browser',
       '9B' => 'BizBrowser',
+      'BC' => 'Black Browser',
       'BH' => 'BlackHawk',
+      'Z1' => 'Blazer',
       'B0' => 'Bloket',
       'BJ' => 'Bunjalloo',
       'BL' => 'B-Line',
@@ -109,6 +120,8 @@ class DeviceDetector
       'BX' => 'BrowseX',
       'BZ' => 'Browzar',
       'B7' => 'Browlser',
+      'BQ' => 'Browse Safe',
+      'M9' => 'Browser Mini',
       '4B' => 'BrowsBit',
       'BY' => 'Biyubi',
       'BF' => 'Byffox',
@@ -123,14 +136,18 @@ class DeviceDetector
       'C6' => 'Chedot',
       'C9' => 'Cherry Browser',
       'C0' => 'Centaury',
+      'ZC' => 'Clario Browser',
+      '9C' => 'Clear TV Browser',
       'CQ' => 'Cliqz',
       'CC' => 'Coc Coc',
       'C4' => 'CoolBrowser',
       'C2' => 'Colibri',
       '6C' => 'Columbus Browser',
+      'XC' => 'Comet',
       'CD' => 'Comodo Dragon',
       'C1' => 'Coast',
       'CX' => 'Charon',
+      'G0' => 'ChatGPT Atlas',
       'CE' => 'CM Browser',
       'C7' => 'CM Mini',
       'CF' => 'Chrome Frame',
@@ -153,6 +170,7 @@ class DeviceDetector
       'C5' => 'Chromium GOST',
       'CY' => 'Cyberfox',
       'CS' => 'Cheshire',
+      '8C' => 'Cromite',
       'RC' => 'Crow Browser',
       'CT' => 'Crusta',
       'CG' => 'Craving Explorer',
@@ -164,6 +182,7 @@ class DeviceDetector
       'PD' => 'Peeps dBrowser',
       'DK' => 'Dark Web',
       'DP' => 'Dark Web Private',
+      'D4' => 'DDU Browser',
       'D1' => 'Debuggable Browser',
       'DC' => 'Decentr',
       'DE' => 'Deepnet Explorer',
@@ -180,6 +199,7 @@ class DeviceDetector
       'DO' => 'Dorado',
       'DR' => 'Dot Browser',
       'DL' => 'Dooble',
+      'D8' => 'Doubao',
       'DI' => 'Dillo',
       'DU' => 'DUC Browser',
       'DD' => 'DuckDuckGo Privacy Browser',
@@ -220,11 +240,13 @@ class DeviceDetector
       'FO' => 'Flow',
       'F2' => 'Flow Browser',
       'FM' => 'Firefox Mobile',
+      '3F' => 'FireSend Browser',
       'FW' => 'Fireweb',
       'FN' => 'Fireweb Navigator',
       'FH' => 'Flash Browser',
       'FS' => 'Flast',
       'F5' => 'Flyperlink',
+      'F9' => 'FOSS Browser',
       'FU' => 'FreeU',
       'F6' => 'Freedom Browser',
       'FT' => 'Frost',
@@ -245,20 +267,25 @@ class DeviceDetector
       'G2' => 'GO Browser',
       'RN' => 'GreenBrowser',
       'HW' => 'Habit Browser',
+      'H7' => 'Halo Browser',
       'HB' => 'Harman Browser',
       'HS' => 'HasBrowser',
       'HA' => 'Hawk Turbo Browser',
       'HQ' => 'Hawk Quick Browser',
       'HE' => 'Helio',
+      'HN' => 'Herond Browser',
       'HX' => 'Hexa Web Browser',
+      'H8' => 'HeyTapBrowser',
       'HI' => 'Hi Browser',
       'HO' => 'hola! Browser',
       'H4' => 'Holla Web Browser',
       'H5' => 'HotBrowser',
       'HJ' => 'HotJava',
+      'H6' => 'HONOR Browser',
       'HT' => 'HTC Browser',
       'HU' => 'Huawei Browser Mobile',
       'HP' => 'Huawei Browser',
+      'HM' => 'Harmony 360 Browser',
       'H3' => 'HUB Browser',
       'IO' => 'iBrowser',
       'IS' => 'iBrowser Mini',
@@ -266,6 +293,8 @@ class DeviceDetector
       'I6' => 'iDesktop PC Browser',
       'IC' => 'iCab',
       'I2' => 'iCab Mobile',
+      '0I' => 'Ifbrowser',
+      '4I' => 'iNet Browser',
       'I1' => 'Iridium',
       'I3' => 'Iron Mobile',
       'I4' => 'IceCat',
@@ -279,6 +308,7 @@ class DeviceDetector
       'I9' => 'Insta Browser',
       'IE' => 'Internet Explorer',
       'I7' => 'Internet Browser Secure',
+      '5I' => 'Internet Webbrowser',
       '3I' => 'Intune Managed Browser',
       'I5' => 'Indian UC Mini Browser',
       'Z0' => 'InBrowser',
@@ -295,6 +325,7 @@ class DeviceDetector
       'JZ' => 'JUZI Browser',
       'KB' => 'K.Browser',
       'KF' => 'Keepsafe Browser',
+      'K7' => 'KeepSolid Browser',
       'KS' => 'Kids Safe Browser',
       'KI' => 'Kindle Browser',
       'KM' => 'K-meleon',
@@ -314,6 +345,7 @@ class DeviceDetector
       'LD' => 'Ladybird',
       'LA' => 'Lagatos Browser',
       'GN' => 'Legan Browser',
+      'LM' => 'Lemur Browser',
       'LR' => 'Lexi Browser',
       'LV' => 'Lenovo Browser',
       'LF' => 'LieBaoFast',
@@ -336,6 +368,7 @@ class DeviceDetector
       'LX' => 'Lynx',
       'L2' => 'Lynket Browser',
       'MD' => 'Mandarin',
+      'MP' => 'Maple',
       'M5' => 'MarsLab Web Browser',
       'M7' => 'MaxBrowser',
       'M1' => 'mCent',
@@ -349,14 +382,16 @@ class DeviceDetector
       'M3' => 'Midori Lite',
       'M6' => 'MixerBox AI',
       'MO' => 'Mobicip',
-      'MU' => 'MIUI Browser',
+      'MU' => 'Mi Browser',
       'MS' => 'Mobile Silk',
       'MK' => 'Mogok Browser',
+      'M8' => 'Motorola Internet Browser',
       'MN' => 'Minimo',
       'MT' => 'Mint Browser',
       'MX' => 'Maxthon',
       'M4' => 'MaxTube Browser',
       'MA' => 'Maelstrom',
+      '3M' => 'Mises',
       'MM' => 'Mmx Browser',
       'NM' => 'MxNitro',
       'MY' => 'Mypal',
@@ -366,6 +401,7 @@ class DeviceDetector
       'NW' => 'Navigateur Web',
       'NK' => 'Naked Browser',
       'NA' => 'Naked Browser Pro',
+      '2N' => 'Neuro Browser',
       'NR' => 'NFS Browser',
       'N5' => 'Ninetails',
       'NB' => 'Nokia Browser',
@@ -374,13 +410,15 @@ class DeviceDetector
       'N2' => 'Norton Private Browser',
       'NX' => 'Nox Browser',
       'N1' => 'NOMone VR Browser',
-      'N6' => 'NOOK Browser',
+      'N6' => 'Nook Browser',
       'NE' => 'NetSurf',
       'NF' => 'NetFront',
       'NL' => 'NetFront Life',
       'NP' => 'NetPositive',
       'NS' => 'Netscape',
       'WR' => 'NextWord Browser',
+      'N8' => 'Ninesky',
+      '3N' => 'Nintendo Browser',
       'NT' => 'NTENT Browser',
       'NU' => 'Nuanti Meta',
       'NI' => 'Nuviu',
@@ -399,6 +437,8 @@ class DeviceDetector
       'OL' => 'OnBrowser Lite',
       'OE' => 'ONE Browser',
       'N4' => 'Onion Browser',
+      '1N' => 'ONIONBrowser',
+      '6O' => 'Opera Air',
       'Y1' => 'Opera Crypto',
       'OX' => 'Opera GX',
       'OG' => 'Opera Neon',
@@ -420,27 +460,37 @@ class DeviceDetector
       'O4' => 'Open Browser',
       '4U' => 'Open Browser 4U',
       '5G' => 'Open Browser fast 5G',
+      '5O' => 'Open Browser Lite',
       'O7' => 'Open TV Browser',
       'OW' => 'OmniWeb',
       'OT' => 'Otter Browser',
       '4O' => 'Owl Browser',
+      'JR' => 'OJR Browser',
       'PL' => 'Palm Blazer',
       'PM' => 'Pale Moon',
       'PY' => 'Polypane',
+      'PZ' => 'Panda Browser',
+      '8P' => 'Prism',
       'PP' => 'Oppo Browser',
       'P6' => 'Opus Browser',
       'PR' => 'Palm Pre',
-      'PU' => 'Puffin',
+      '2E' => 'Pocket Internet Explorer',
+      '7I' => 'Puffin Cloud Browser',
+      '6I' => 'Puffin Incognito Browser',
+      'PU' => 'Puffin Secure Browser',
       '2P' => 'Puffin Web Browser',
       'PW' => 'Palm WebPro',
       'PA' => 'Palmscape',
       'P7' => 'Pawxy',
+      '0P' => 'Peach Browser',
       'PE' => 'Perfect Browser',
+      'K6' => 'Perk',
       'P1' => 'Phantom.me',
       'PH' => 'Phantom Browser',
       'PX' => 'Phoenix',
       'PB' => 'Phoenix Browser',
       '5P' => 'Photon',
+      'N9' => 'Pintar Browser',
       'P9' => 'PirateBrowser',
       'P8' => 'PICO Browser',
       'PF' => 'PlayFree Browser',
@@ -448,16 +498,23 @@ class DeviceDetector
       'PO' => 'Polaris',
       'PT' => 'Polarity',
       'LY' => 'PolyBrowser',
+      'PQ' => 'Power Browser',
+      '9P' => 'Presearch',
+      'BP' => 'Privacy Browser',
       'PI' => 'PrivacyWall',
       'P4' => 'Privacy Explorer Fast Safe',
+      'X5' => 'Cloak Private Browser',
       'P3' => 'Private Internet Browser',
       'P5' => 'Proxy Browser',
       '7P' => 'Proxyium',
       '6P' => 'Proxynet',
+      '2F' => 'ProxyFox',
+      '2M' => 'ProxyMax',
       'P2' => 'Pi Browser',
       'P0' => 'PronHub Browser',
       'PC' => 'PSI Secure Browser',
       'RW' => 'Reqwireless WebViewer',
+      'RO' => 'Roccat',
       'PS' => 'Microsoft Edge',
       'QA' => 'Qazweb',
       'QI' => 'Qiyu',
@@ -470,12 +527,17 @@ class DeviceDetector
       'QS' => 'Quick Browser',
       'QT' => 'Qutebrowser',
       'QU' => 'Quark',
+      'Q6' => 'QuarkPC',
+      'Q7' => 'Quetta',
       'QZ' => 'QupZilla',
       'QM' => 'Qwant Mobile',
+      'Q5' => 'QtWeb',
       'QW' => 'QtWebEngine',
       'R3' => 'Rakuten Browser',
       'R4' => 'Rakuten Web Search',
       'R2' => 'Raspbian Chromium',
+      'R6' => 'Ray',
+      'RT' => 'RCA Tor Explorer',
       'RE' => 'Realme Browser',
       'RK' => 'Rekonq',
       'RM' => 'RockMelt',
@@ -503,10 +565,12 @@ class DeviceDetector
       'K1' => 'Sidekick',
       'S1' => 'SimpleBrowser',
       '3S' => 'SilverMob US',
+      'ZB' => 'Singlebox',
       'SY' => 'Sizzy',
       'K3' => 'Skye',
       'SK' => 'Skyfire',
       'KL' => 'SkyLeap',
+      'SJ' => 'Seekee',
       'SS' => 'Seraphic Sraf',
       'KK' => 'SiteKiosk',
       'SL' => 'Sleipnir',
@@ -522,7 +586,9 @@ class DeviceDetector
       '6S' => 'Smart Search & Web Browser',
       'LE' => 'Smart Lenovo Browser',
       'OZ' => 'Smooz',
+      'SM' => 'SeaMonkey',
       'SN' => 'Snowshoe',
+      'K5' => 'Spark',
       'B1' => 'Spectre Browser',
       'S2' => 'Splash',
       'SI' => 'Sputnik Browser',
@@ -537,10 +603,12 @@ class DeviceDetector
       'RY' => 'Surfy Browser',
       'SG' => 'Stargon',
       'S0' => 'START Internet Browser',
+      'YS' => 'Stay Browser',
       '5A' => 'Stealth Browser',
       'S4' => 'Steam In-Game Overlay',
       'ST' => 'Streamy',
       'SX' => 'Swiftfox',
+      'W7' => 'Swiftweasel',
       'SZ' => 'Seznam Browser',
       'W1' => 'Sweet Browser',
       '2X' => 'SX Browser',
@@ -556,13 +624,18 @@ class DeviceDetector
       'TB' => 'Tenta Browser',
       'TE' => 'Tesla Browser',
       'TZ' => 'Tizen Browser',
+      'T5' => 'Tincat Browser',
       'TI' => 'Tint Browser',
       'TL' => 'TrueLocation Browser',
       'TC' => 'TUC Mini Browser',
+      'TK' => 'TUSK',
       'TU' => 'Tungsten',
       'TG' => 'ToGate',
+      'T3' => 'Total Browser',
+      'TQ' => 'TQ Browser',
       'TS' => 'TweakStyle',
       'TV' => 'TV Bro',
+      'T4' => 'TV-Browser Internet',
       'U0' => 'U Browser',
       'UB' => 'UBrowser',
       'UC' => 'UC Browser',
@@ -570,15 +643,19 @@ class DeviceDetector
       'UM' => 'UC Browser Mini',
       'UT' => 'UC Browser Turbo',
       'UI' => 'Ui Browser Mini',
+      'UP' => 'UPhone Browser',
       'UR' => 'UR Browser',
       'UZ' => 'Uzbl',
       'UE' => 'Ume Browser',
       'V0' => 'vBrowser',
       'VA' => 'Vast Browser',
+      'VQ' => 'VC Browser Mini Pro',
       'V3' => 'VD Browser',
+      'VR' => 'Veera',
       'VE' => 'Venus Browser',
       'WD' => 'Vewd Browser',
       'V5' => 'VibeMate',
+      'NQ' => 'Nova Browser',
       'N0' => 'Nova Video Downloader Pro',
       'VS' => 'Viasat Browser',
       'VI' => 'Vivaldi',
@@ -587,6 +664,7 @@ class DeviceDetector
       'VB' => 'Vision Mobile Browser',
       'V4' => 'Vertex Surf',
       'VM' => 'VMware AirWatch',
+      'V6' => 'VMS Mosaic',
       'VK' => 'Vonkeror',
       'VU' => 'Vuhuv',
       'WI' => 'Wear Internet Browser',
@@ -601,15 +679,18 @@ class DeviceDetector
       'WB' => 'Wave Browser',
       'WA' => 'Wavebox',
       'WH' => 'Whale Browser',
+      'W2' => 'Whale TV Browser',
       'WO' => 'wOSBrowser',
       '3W' => 'w3m',
       'WT' => 'WeTab Browser',
       '1W' => 'World Browser',
       'WL' => 'Wolvic',
+      'WK' => 'Wukong Browser',
       'WY' => 'Wyzo',
       'YG' => 'YAGI',
       'YJ' => 'Yahoo! Japan Browser',
       'YA' => 'Yandex Browser',
+      'Y4' => 'Yandex Browser Corp',
       'YL' => 'Yandex Browser Lite',
       'YN' => 'Yaani Browser',
       'Y2' => 'Yo Browser',
@@ -618,63 +699,74 @@ class DeviceDetector
       'Y3' => 'YouBrowser',
       'YZ' => 'Yuzu Browser',
       'XR' => 'xBrowser',
+      'X3' => 'MMBOX XBrowser',
       'XB' => 'X Browser Lite',
       'X0' => 'X-VPN',
       'X1' => 'xBrowser Pro Super Fast',
       'XN' => 'XNX Browser',
+      'X6' => 'XPlay Browser',
       'XT' => 'XtremeCast',
       'XS' => 'xStand',
       'XI' => 'Xiino',
+      'X4' => 'XnBrowse',
       'XO' => 'Xooloo Internet',
       'XV' => 'Xvast',
       'ZE' => 'Zetakey',
       'ZV' => 'Zvu',
       'ZI' => 'Zirco Browser',
-      'ZR' => 'Zordo Browser'
-
-      # detected browsers in older versions
-      # 'IA' => 'Iceape',  => pim
-      # 'SM' => 'SeaMonkey',  => pim
+      'ZR' => 'Zordo Browser',
+      'ZT' => 'ZTE Browser',
+      'IA' => 'Iceape',
     }.freeze
 
     BROWSER_FULL_TO_SHORT = AVAILABLE_BROWSERS.invert.freeze
 
-    # https://github.com/matomo-org/device-detector/blob/75d88bbefb0182f9207c9f48dc39b1bc8c7cc43f/Parser/Client/Browser.php#L746-L768
     MOBILE_ONLY_BROWSERS = Set.new(
       %w[
-        36 AH AI BL C1 C4 CB CW DB
-        DD DT EU EZ FK FM FR FX GH
-        GI GR HA HU IV JB KD M1 MF
-        MN MZ NX OC OI OM OZ PU PI
-        PE QU RE S0 S7 SA SB SG SK
-        ST SU T1 UH UM UT VE VV WI
-        WP YN IO IS HQ RW HI PN BW
-        YO PK MR AP AK UI SD VN 4S
-        RF LR SQ BV L1 F0 KS V0 C8
-        AZ MM BT N0 P0 F3 DU D0 P1
-        O4 XO U0 B0 VA X0 A5 X1 18
-        B5 B6 TC A6 2X F4 YG WR NA
-        DM 1M A7 XN XT XB W1 HT B7
-        B9 T0 I8 O6 P7 O8 4B A8 P8
-        1W EV Z0 I9 V4 H4 M5 0S 0C
-        ZR D6 F6 P3 FT A9 X2 NI FG
-        TH N3 GD O9 Q3 F7 K2 N4 P5
-        H5 V3 G2 BG OL II TL M6 Y3
-        M7 GN D3 IG HW 4O OU 5P KE
-        5A TT 6P G3 7P VU F8 L4 DK
-        DP KL K4 N6 KU
+        36 AH AI BL C1 C4 CB CW
+        DB 3M DT EU EZ FK FM FR
+        FX GH GI GR HA HU IV JB
+        KD M1 MF MN MZ NX OC OI
+        OM OZ 2P PI PE QU RE S0
+        S7 SA 0I SG SK ST SU T1
+        UH UM UT VE VV WI WP YN
+        IO IS HQ RW HI PN BW YO
+        PK MR AP AK UI SD VN 4S
+        RF LR SQ BV L1 F0 KS V0
+        C8 AZ MM BT N0 P0 F3 DU
+        D0 P1 O4 XO U0 B0 VA X0
+        A5 X1 18 B5 B6 TC A6 2X
+        F4 YG WR NA DM 1M A7 XN
+        XT XB W1 HT B7 B9 T0 I8
+        O6 P7 O8 4B A8 P8 1W EV
+        Z0 I9 V4 H4 M5 0S 0C ZR
+        D6 F6 P3 FT A9 X2 NI FG
+        TH N3 GD O9 Q3 F7 K2 N4
+        P5 H5 V3 G2 BG OL II TL
+        M6 Y3 M7 GN JR IG HW 4O
+        OU 5P KE 5A TT 6P G3 7P
+        VU F8 L4 DK DP KL K4 N6
+        KU WK M8 UP ZT 9P N8 VR
+        N9 M9 F9 0P 0A 2F 2M K7
+        1N 8A H7 X3 X4 5O 6I 7I
+        X5 3P 2E T5 2N SJ X6 SM
+        AY BQ BC NQ VQ KA YS D4
+        PZ
       ]
     ).freeze
 
-    # https://github.com/matomo-org/device-detector/blob/75d88bbefb0182f9207c9f48dc39b1bc8c7cc43f/Parser/Client/Browser.php#L775-L783
     NAME_TO_KNOWN_BROWSERS = {
       'Chrome' => ['Google Chrome'],
       'Chrome Webview' => ['Android WebView'],
       'DuckDuckGo Privacy Browser' => ['DuckDuckGo'],
       'Edge WebView' => ['Microsoft Edge WebView2'],
+      'Mi Browser' => ['Miui Browser', 'XiaoMiBrowser'],
       'Microsoft Edge' => ['Edge'],
       'Norton Private Browser' => ['Norton Secure Browser'],
-      'Vewd Browser' => ['Vewd Core']
+      'Opera GX' => ['Opera GX Android'],
+      'Opera Mini' => ['Opera Mini Android'],
+      'Vewd Browser' => ['Vewd Core'],
+      'Yandex Browser' => ['YaSearchBrowser'],
     }.freeze
 
     KNOWN_BROWSER_TO_NAME = NAME_TO_KNOWN_BROWSERS.each_with_object({}) do |(name, browsers), h|

@@ -1914,7 +1914,8 @@ class DeviceDetector
       return regex_meta[:brand] if regex_meta[:brand] == 'Sony Ericsson'
 
       brand = regex_meta[:regex_name] || regex_meta[:brand] || vendor_fragment.name || fix_for_x_music
-      return if brand == 'Unknown'
+      brand = brand.to_s
+      return if brand.empty? || brand == 'Unknown'
 
       brand
     end

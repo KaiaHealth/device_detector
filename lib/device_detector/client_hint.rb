@@ -14,6 +14,7 @@ class DeviceDetector
       return if headers.nil?
 
       @headers = headers
+      @normalized_headers = normalize_headers(headers)
       @full_version = extract_full_version
       @browser_list = extract_browser_list
       @app_name = extract_app_name
@@ -21,16 +22,21 @@ class DeviceDetector
       @platform_version = extract_platform_version
       @mobile = extract_mobile
       @model = extract_model
+      @form_factors = extract_form_factors
     end
 
     attr_reader :app_name, :browser_list, :full_version, :headers, :mobile, :model, :platform,
-                :platform_version
+                :platform_version, :form_factors
 
     def browser_name
       return 'Iridium' if iridium?
       return '360 Secure Browser' if secure_browser?
 
       browser_name_from_list || app_name
+    end
+
+    def browser_version
+      browser_version_from_list || full_version
     end
 
     def os_version
@@ -82,13 +88,39 @@ class DeviceDetector
 
     # https://github.com/matomo-org/device-detector/blob/75d88bbefb0182f9207c9f48dc39b1bc8c7cc43f/Parser/Client/Browser.php#L1076-L1079
     def browser_name_from_list
-      @browser_name_from_list ||= browser_list&.reject do |b|
-        ['Chromium', 'Microsoft Edge'].include?(b.name)
-      end&.last&.name
+      browser_from_list[:name]
+    end
+
+    def browser_version_from_list
+      browser_from_list[:version]
+    end
+
+    # https://github.com/matomo-org/device-detector/blob/5fef894/Parser/Client/Browser.php#L1181-L1214
+    def browser_from_list
+      @browser_from_list ||= begin
+        name = version = nil
+
+        Array(browser_list).each do |browser|
+          detected_name = name_from_known_browsers(browser.name)
+          next if detected_name.nil?
+
+          name = detected_name
+          version = browser.version
+
+          # Prefer the first detected brand that isn't generic Chromium/Edge.
+          break unless ['Chromium', 'Microsoft Edge'].include?(name)
+        end
+
+        { name: name, version: (full_version || version) }
+      end
     end
 
     def available_browsers
-      DeviceDetector::Browser::AVAILABLE_BROWSERS.values
+      DeviceDetector.cache.get_or_set('available_browsers') do
+        browsers_path = File.join(ROOT, 'regexes', 'client', 'browsers.yml')
+        names_from_regexes = YAML.load_file(browsers_path).map { |entry| entry['name'] }.compact
+        (DeviceDetector::Browser::AVAILABLE_BROWSERS.values + names_from_regexes).uniq
+      end
     end
 
     def available_osses
@@ -138,11 +170,11 @@ class DeviceDetector
     end
 
     def app_name_from_headers
-      return if headers.nil?
+      app = extract_from_header('http-x-requested-with', 'x-requested-with')
+      return if app.nil?
+      return if app.to_s.downcase == 'xmlhttprequest'
 
-      headers['http-x-requested-with'] ||
-        headers['X-Requested-With'] ||
-        headers['x-requested-with']
+      app
     end
 
     def extract_app_name
@@ -174,14 +206,14 @@ class DeviceDetector
 
     def extract_browser_list
       extract_browser_list_from_full_version_list ||
-        extract_browser_list_from_header('Sec-CH-UA') ||
-        extract_browser_list_from_header('Sec-CH-UA-Full-Version-List')
+        extract_browser_list_from_header('Sec-CH-UA', 'Sec-CH-UA-Full-Version-List')
     end
 
-    def extract_browser_list_from_header(header)
-      return if headers[header].nil?
+    def extract_browser_list_from_header(*headers)
+      value = extract_from_header(*headers)
+      return if value.nil?
 
-      headers[header].split(', ').map do |component|
+      value.split(', ').map do |component|
         name_and_version = extract_browser_name_and_version(component)
         next if name_and_version[:name].nil?
 
@@ -192,14 +224,15 @@ class DeviceDetector
     def extract_browser_name_and_version(component)
       component_and_version = component.gsub('"', '').split("\;v=")
       name = name_from_known_browsers(component_and_version.first)
-      browser_version = full_version&.gsub('"', '') || component_and_version.last
+      browser_version = full_version || component_and_version.last
       { name: name, version: browser_version }
     end
 
     def extract_browser_list_from_full_version_list
-      return if headers['fullVersionList'].nil? && headers['brands'].nil?
+      full_version_list = extract_from_header('brands', 'fullVersionList', 'fullversionlist')
+      return unless full_version_list.is_a?(Array)
 
-      (headers['brands'] || headers['fullVersionList']).map do |item|
+      full_version_list.map do |item|
         name = name_from_known_browsers(item['brand'])
         next if name.nil?
 
@@ -220,30 +253,64 @@ class DeviceDetector
       end
     end
 
-    def extract_from_header(header)
-      return if headers[header].nil? || headers[header] == ''
+    def extract_from_header(*header_names)
+      return if @normalized_headers.nil?
 
-      headers[header]
+      header_names.each do |header_name|
+        normalized_name = normalize_header_name(header_name)
+        value = @normalized_headers[normalized_name]
+        next if value.nil? || value == ''
+
+        return value
+      end
+
+      nil
     end
 
     def extract_full_version
-      extract_from_header('Sec-CH-UA-Full-Version') || extract_from_header('uaFullVersion')
+      value = extract_from_header('Sec-CH-UA-Full-Version', 'uaFullVersion')
+      value&.to_s&.delete_prefix('"')&.delete_suffix('"')
     end
 
     def extract_platform
-      extract_from_header('Sec-CH-UA-Platform') || extract_from_header('platform')
+      value = extract_from_header('Sec-CH-UA-Platform', 'platform')
+      value&.to_s&.delete_prefix('"')&.delete_suffix('"')
     end
 
     def extract_platform_version
-      extract_from_header('Sec-CH-UA-Platform-Version') || extract_from_header('platformVersion')
+      value = extract_from_header('Sec-CH-UA-Platform-Version', 'platformVersion')
+      value&.to_s&.delete_prefix('"')&.delete_suffix('"')
     end
 
     def extract_mobile
-      extract_from_header('Sec-CH-UA-Mobile') || extract_from_header('mobile')
+      value = extract_from_header('Sec-CH-UA-Mobile', 'mobile')
+      return if value.nil?
+
+      %w[?1 1 true].include?(value.to_s.downcase)
     end
 
     def extract_model
-      extract_from_header('Sec-CH-UA-Model') || extract_from_header('model')
+      value = extract_from_header('Sec-CH-UA-Model', 'model')
+      value&.to_s&.delete_prefix('"')&.delete_suffix('"')
+    end
+
+    def extract_form_factors
+      value = extract_from_header('formFactors', 'Sec-CH-UA-Form-Factors')
+      return [] if value.nil?
+
+      return value.map(&:to_s).map(&:downcase) if value.is_a?(Array)
+
+      value.to_s.downcase.scan(/"([a-z]+)"/).flatten
+    end
+
+    def normalize_headers(headers)
+      headers.each_with_object({}) do |(name, value), normalized|
+        normalized[normalize_header_name(name)] = value
+      end
+    end
+
+    def normalize_header_name(name)
+      name.to_s.downcase.tr('_', '-')
     end
   end
 end

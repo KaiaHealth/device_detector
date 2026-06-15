@@ -399,7 +399,6 @@ class DeviceDetector
       'Mocor OS' => 'Real-time OS',
       'NuttX' => 'Real-time OS',
       'openSUSE' => 'GNU/Linux',
-      'OpenHarmony' => 'Android',
       'Orsay' => 'Other Smart TV',
       'Plan 9' => 'Unix',
       'Puffin OS' => 'Android',

@@ -417,6 +417,7 @@ class DeviceDetector
     token ||= user_agent[/MB9[78]\/[0-9.]+\s+\(([^,;()]+),/i, 1]
     token ||= user_agent[/\((Hotack)[0-9A-Z]*;/i, 1]
     token ||= user_agent[/Model\/[A-Z0-9]+\s+\(([A-Za-z0-9_+\-]+);WHALEOS/i, 1]
+    token ||= user_agent[/Model\/(Hisense)-[A-Z0-9]+/i, 1]
     return if token.nil?
 
     normalized = token.strip

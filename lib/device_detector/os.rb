@@ -118,6 +118,7 @@ class DeviceDetector
       'HNX' => 'HarmonyOS NEXT',
       'HAS' => 'HasCodingOS',
       'HEL' => 'HELIX OS',
+      'HYP' => 'HyperOS',
       'IRI' => 'IRIX',
       'INF' => 'Inferno',
       'JME' => 'Java ME',
@@ -250,7 +251,7 @@ class DeviceDetector
     OS_FAMILIES = {
       'Android' => %w[ AND CYN FIR REM RZD MLD MCD YNS GRI HAR
                        ADR CLR BOS REV LEN SIR RRS WER PIC ARM
-                       HEL BYI],
+                       HEL BYI HYP],
       'AmigaOS' => %w[AMG MOR ARO],
       'BlackBerry' => %w[BLB QNX],
       'Brew' => ['BMP'],
